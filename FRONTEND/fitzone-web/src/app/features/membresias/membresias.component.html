@@ -1,0 +1,52 @@
+<app-panel titulo="Membresías" descripcion="Planes de los miembros, su vigencia y estado." [cargando]="cargando()">
+  @if (puedeRenovar()) { <button acciones type="button" class="fz-btn" (click)="nueva()">Renovar / asignar membresía</button> }
+  <div class="divide-y divide-black/5">
+    @for (m of visibles(); track m.idMembresia) {
+      <app-fila [principal]="m.miembro" [secundario]="'Plan ' + m.plan" [meta]="(m.fechaInicio | fecha) + ' → ' + (m.fechaFin | fecha)" [estado]="m.estado" />
+    } @empty { <app-vacio /> }
+  </div>
+</app-panel>
+
+@if (abierto()) {
+  <app-modal titulo="Renovar / asignar membresía" (cerrar)="abierto.set(false)">
+    <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-4">
+      <p class="text-xs text-zinc-400">Se crea la membresía y se registra el pago en una sola operación. Si el miembro tiene una membresía activa, la nueva empieza al día siguiente de que termine.</p>
+      <div>
+        <label class="fz-label" for="mi">Miembro *</label>
+        <select id="mi" class="fz-input" formControlName="idMiembro">
+          <option [ngValue]="0" disabled>Selecciona…</option>
+          @for (m of miembros(); track m.idMiembro) { <option [ngValue]="m.idMiembro">{{ m.nombreCompleto }}</option> }
+        </select>
+        @if (form.controls.idMiembro.touched && form.controls.idMiembro.invalid) { <p class="fz-error">Selecciona un miembro.</p> }
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label class="fz-label" for="pl">Plan *</label>
+          <select id="pl" class="fz-input" formControlName="idTipoPlan" (change)="alElegirPlan()">
+            <option [ngValue]="0" disabled>Selecciona…</option>
+            @for (p of planes(); track p.id) { <option [ngValue]="p.id">{{ p.nombre }}</option> }
+          </select>
+          @if (form.controls.idTipoPlan.touched && form.controls.idTipoPlan.invalid) { <p class="fz-error">Selecciona un plan.</p> }
+        </div>
+        <div>
+          <label class="fz-label" for="mp">Método de pago *</label>
+          <select id="mp" class="fz-input" formControlName="idMetodoPago">
+            <option [ngValue]="0" disabled>Selecciona…</option>
+            @for (p of metodos(); track p.id) { <option [ngValue]="p.id">{{ p.nombre }}</option> }
+          </select>
+          @if (form.controls.idMetodoPago.touched && form.controls.idMetodoPago.invalid) { <p class="fz-error">Selecciona un método.</p> }
+        </div>
+      </div>
+      <div>
+        <label class="fz-label" for="mo">Monto (COP) *</label>
+        <input id="mo" type="number" min="1" step="1000" class="fz-input" formControlName="monto" />
+        @if (form.controls.monto.touched && form.controls.monto.invalid) { <p class="fz-error">El monto debe ser mayor a 0.</p> }
+      </div>
+      @if (error()) { <p class="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">{{ error() }}</p> }
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" class="fz-btn-ghost" (click)="abierto.set(false)">Cancelar</button>
+        <button type="submit" class="fz-btn" [disabled]="enviando()">{{ enviando() ? 'Registrando…' : 'Confirmar y registrar pago' }}</button>
+      </div>
+    </form>
+  </app-modal>
+}

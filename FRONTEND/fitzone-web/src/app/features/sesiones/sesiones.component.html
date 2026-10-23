@@ -1,0 +1,45 @@
+<app-panel [titulo]="titulo()" descripcion="Sesiones programadas de cada clase, con su ocupación." [cargando]="cargando()">
+  @if (puedeCrear()) { <button acciones type="button" class="fz-btn" (click)="nueva()">Programar sesión</button> }
+  <div class="divide-y divide-black/5">
+    @for (s of visibles(); track s.numeroSesion) {
+      <app-fila [principal]="s.clase" [secundario]="(s.fecha | fecha) + ' · ' + s.horaInicio + ' – ' + s.horaFin + ' · ' + s.entrenador"
+        [meta]="s.sede + ' · ' + s.inscritos + '/' + s.cupoMaximo + ' inscritos'" [estado]="s.fecha < hoy ? 'completado' : (s.inscritos >= s.cupoMaximo ? 'llena' : 'programada')" />
+    } @empty { <app-vacio /> }
+  </div>
+</app-panel>
+
+@if (abierto()) {
+  <app-modal titulo="Programar sesión" (cerrar)="abierto.set(false)">
+    <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-4">
+      <div>
+        <label class="fz-label" for="cl">Clase *</label>
+        <select id="cl" class="fz-input" formControlName="idClase">
+          <option [ngValue]="0" disabled>Selecciona…</option>
+          @for (c of clases(); track c.idClase) { <option [ngValue]="c.idClase">{{ c.nombre }} — {{ c.sede }} ({{ c.entrenador }})</option> }
+        </select>
+        @if (form.controls.idClase.touched && form.controls.idClase.invalid) { <p class="fz-error">Selecciona una clase.</p> }
+      </div>
+      <div class="grid gap-4 sm:grid-cols-3">
+        <div>
+          <label class="fz-label" for="fe">Fecha *</label>
+          <input id="fe" type="date" class="fz-input" [min]="hoy" formControlName="fecha" />
+        </div>
+        <div>
+          <label class="fz-label" for="hi">Inicio *</label>
+          <input id="hi" type="time" class="fz-input" formControlName="horaInicio" />
+          @if (form.controls.horaInicio.touched && form.controls.horaInicio.invalid) { <p class="fz-error">Obligatorio.</p> }
+        </div>
+        <div>
+          <label class="fz-label" for="hf">Fin *</label>
+          <input id="hf" type="time" class="fz-input" formControlName="horaFin" />
+          @if (form.controls.horaFin.touched && form.controls.horaFin.invalid) { <p class="fz-error">Obligatorio.</p> }
+        </div>
+      </div>
+      @if (error()) { <p class="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">{{ error() }}</p> }
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" class="fz-btn-ghost" (click)="abierto.set(false)">Cancelar</button>
+        <button type="submit" class="fz-btn" [disabled]="enviando()">{{ enviando() ? 'Guardando…' : 'Programar sesión' }}</button>
+      </div>
+    </form>
+  </app-modal>
+}

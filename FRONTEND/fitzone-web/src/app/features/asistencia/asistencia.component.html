@@ -1,0 +1,23 @@
+<app-panel titulo="Asistencia" descripcion="Marca quién asistió a cada sesión." [cargando]="cargando()">
+  <div class="border-b border-black/5 px-6 py-5">
+    <label class="fz-label" for="ses">Sesión</label>
+    <select id="ses" class="fz-input" [ngModel]="numero()" (ngModelChange)="elegir($event)">
+      <option [ngValue]="0">Selecciona una sesión…</option>
+      @for (s of sesiones(); track s.numeroSesion) {
+        <option [ngValue]="s.numeroSesion">{{ s.clase }} · {{ s.fecha | fecha }} {{ s.horaInicio }} · {{ s.sede }}</option>
+      }
+    </select>
+    @if (sesion()) { <p class="mt-2 text-xs font-bold text-zinc-500">{{ presentes() }} de {{ inscritos().length }} asistieron</p> }
+  </div>
+  @if (sesion()) {
+    <div class="divide-y divide-black/5">
+      @for (i of inscritos(); track i.idMiembro) {
+        <app-fila [principal]="i.miembro" [secundario]="'Inscrito el ' + (i.fechaInscripcion | fecha)" [estado]="i.asistio ? 'asistió' : 'inscrito'">
+          <button type="button" class="fz-btn-ghost" (click)="marcar(i)">{{ i.asistio ? 'Quitar asistencia' : 'Marcar asistió' }}</button>
+        </app-fila>
+      } @empty { <app-vacio mensaje="Esta sesión no tiene inscritos." detalle="" /> }
+    </div>
+  } @else {
+    <app-vacio mensaje="Selecciona una sesión." detalle="Verás aquí la lista para marcar asistencia." />
+  }
+</app-panel>

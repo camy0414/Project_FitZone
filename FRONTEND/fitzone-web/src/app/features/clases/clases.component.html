@@ -1,0 +1,55 @@
+<app-panel [titulo]="esEntrenador() ? 'Mis clases' : 'Clases'" descripcion="Clases del catálogo, su cupo máximo y su entrenador." [cargando]="cargando()">
+  @if (puedeCrear()) { <button acciones type="button" class="fz-btn" (click)="nueva()">Nueva clase</button> }
+  <div class="divide-y divide-black/5">
+    @for (c of visibles(); track c.idClase) {
+      <app-fila [principal]="c.nombre" [secundario]="c.descripcion || 'Sin descripción'" [meta]="c.entrenador + ' · ' + c.sede + ' · cupo ' + c.cupoMaximo" />
+    } @empty { <app-vacio /> }
+  </div>
+</app-panel>
+
+@if (abierto()) {
+  <app-modal titulo="Nueva clase" (cerrar)="abierto.set(false)">
+    <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-4">
+      <div>
+        <label class="fz-label" for="nom">Nombre *</label>
+        <input id="nom" class="fz-input" formControlName="nombre" maxlength="50" placeholder="Spinning" />
+        @if (form.controls.nombre.touched && form.controls.nombre.invalid) { <p class="fz-error">Obligatorio.</p> }
+      </div>
+      <div>
+        <label class="fz-label" for="des">Descripción</label>
+        <input id="des" class="fz-input" formControlName="descripcion" maxlength="200" />
+      </div>
+      <div>
+        <label class="fz-label" for="cup">Cupo máximo *</label>
+        <input id="cup" type="number" min="1" class="fz-input" formControlName="cupoMaximo" />
+        @if (form.controls.cupoMaximo.touched && form.controls.cupoMaximo.invalid) { <p class="fz-error">Debe ser al menos 1.</p> }
+      </div>
+      @if (esAdmin()) {
+        <div>
+          <label class="fz-label" for="sed">Sede *</label>
+          <select id="sed" class="fz-input" formControlName="idSede" (change)="alCambiarSede()">
+            <option [ngValue]="0" disabled>Selecciona…</option>
+            @for (s of sedes(); track s.idSede) { <option [ngValue]="s.idSede">{{ s.nombre }}</option> }
+          </select>
+          @if (form.controls.idSede.touched && form.controls.idSede.invalid) { <p class="fz-error">Selecciona una sede.</p> }
+        </div>
+      } @else {
+        <p class="rounded-xl bg-zinc-100 px-4 py-3 text-sm text-zinc-600">Se creará en tu sede: <b>{{ usuario()?.sede }}</b>.</p>
+      }
+      <div>
+        <label class="fz-label" for="ent">Entrenador *</label>
+        <select id="ent" class="fz-input" formControlName="idEmpleado">
+          <option [ngValue]="0" disabled>{{ sedeElegida() ? 'Selecciona…' : 'Elige primero la sede' }}</option>
+          @for (e of entrenadores(); track e.idEmpleado) { <option [ngValue]="e.idEmpleado">{{ e.nombreCompleto }}</option> }
+        </select>
+        @if (form.controls.idEmpleado.touched && form.controls.idEmpleado.invalid) { <p class="fz-error">Selecciona un entrenador.</p> }
+        <p class="mt-1 text-[11px] text-zinc-400">Solo entrenadores activos de la misma sede.</p>
+      </div>
+      @if (error()) { <p class="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">{{ error() }}</p> }
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" class="fz-btn-ghost" (click)="abierto.set(false)">Cancelar</button>
+        <button type="submit" class="fz-btn" [disabled]="enviando()">{{ enviando() ? 'Guardando…' : 'Crear clase' }}</button>
+      </div>
+    </form>
+  </app-modal>
+}

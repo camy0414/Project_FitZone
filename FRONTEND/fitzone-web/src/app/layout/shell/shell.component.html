@@ -1,0 +1,85 @@
+<main class="min-h-screen bg-[#f5f4f1] text-zinc-950">
+  <div
+    class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition lg:hidden"
+    [class]="menuAbierto() ? 'visible opacity-100' : 'invisible opacity-0'"
+    (click)="menuAbierto.set(false)"
+  ></div>
+
+  <aside
+    class="fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-[#111112] text-white transition-transform duration-300 lg:translate-x-0"
+    [class]="menuAbierto() ? 'translate-x-0' : '-translate-x-full'"
+  >
+    <div class="flex h-24 items-center justify-between px-7">
+      <div class="flex items-center gap-3">
+        <span class="grid size-11 place-items-center rounded-2xl bg-orange-500 text-black shadow-[0_0_28px_rgba(249,115,22,.22)]">
+          <app-icon name="dumbbell" cls="size-6" [sw]="2.6" />
+        </span>
+        <div>
+          <p class="text-xl font-black tracking-tight">FIT ZONE</p>
+          <p class="text-[9px] font-bold tracking-[.25em] text-orange-400">CONTROL CENTER</p>
+        </div>
+      </div>
+      <button type="button" class="grid size-9 place-items-center rounded-xl text-zinc-400 hover:bg-white/5 lg:hidden" (click)="menuAbierto.set(false)" aria-label="Cerrar menú">
+        <app-icon name="x" cls="size-5" />
+      </button>
+    </div>
+
+    <div class="mx-5 mb-5 rounded-2xl border border-white/8 bg-white/[.04] p-3.5">
+      <div class="flex items-center gap-3">
+        <app-avatar [nombre]="usuario()?.nombre ?? ''" />
+        <div class="min-w-0">
+          <p class="truncate text-sm font-bold">{{ usuario()?.nombre }}</p>
+          <p class="mt-0.5 text-xs text-zinc-500">{{ rolLabel() }}</p>
+          <p class="text-[11px] text-orange-400">{{ sedeLabel() }}</p>
+        </div>
+      </div>
+    </div>
+
+    <nav class="flex-1 space-y-1 overflow-y-auto px-4">
+      <p class="mb-3 px-3 text-[10px] font-bold uppercase tracking-[.2em] text-zinc-600">Operación</p>
+      @for (item of menu(); track item.ruta) {
+        <a
+          [routerLink]="item.ruta"
+          routerLinkActive="!bg-orange-500 !text-black shadow-lg shadow-orange-950/20"
+          (click)="menuAbierto.set(false)"
+          class="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-zinc-400 transition hover:bg-white/[.05] hover:text-white"
+        >
+          <app-icon [name]="item.icono" cls="size-[18px]" />
+          <span class="flex-1 text-left">{{ item.etiqueta }}</span>
+        </a>
+      }
+    </nav>
+
+    <div class="space-y-1 border-t border-white/8 p-4">
+      <button type="button" (click)="salir()" class="flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-zinc-400 transition hover:bg-red-500/10 hover:text-red-400">
+        <app-icon name="log-out" cls="size-[18px]" />
+        Cerrar sesión
+      </button>
+    </div>
+  </aside>
+
+  <div class="lg:pl-72">
+    <header class="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-black/5 bg-[#f5f4f1]/90 px-5 backdrop-blur-xl sm:px-8">
+      <div class="flex items-center gap-3">
+        <button type="button" (click)="menuAbierto.set(true)" class="grid size-10 place-items-center rounded-xl border border-black/8 bg-white lg:hidden" aria-label="Abrir menú">
+          <app-icon name="menu" cls="size-5" />
+        </button>
+        <div class="hidden items-center gap-2 rounded-xl border border-black/8 bg-white px-3 sm:flex">
+          <app-icon name="search" cls="size-4 text-zinc-400" />
+          <input [value]="buscador.texto()" (input)="buscar($event)" placeholder="Buscar en este módulo..." class="h-10 w-64 bg-transparent text-sm outline-none placeholder:text-zinc-400" />
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="hidden text-right md:block">
+          <p class="text-xs font-bold text-zinc-800">{{ sedeLabel() }}</p>
+          <p class="text-[11px] text-zinc-400">America/Bogota · COP</p>
+        </div>
+      </div>
+    </header>
+
+    <div class="mx-auto max-w-[1600px] p-5 sm:p-8">
+      <router-outlet />
+    </div>
+  </div>
+  <app-toasts />
+</main>

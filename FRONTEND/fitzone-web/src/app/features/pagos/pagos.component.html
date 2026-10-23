@@ -1,0 +1,11 @@
+<app-panel titulo="Pagos" descripcion="Historial de pagos. Se registran al renovar una membresía y no se pueden modificar." [cargando]="cargando()">
+  <div acciones class="rounded-xl bg-zinc-100 px-4 py-2 text-right">
+    <p class="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Total</p>
+    <p class="text-sm font-black">{{ total() | cop }}</p>
+  </div>
+  <div class="divide-y divide-black/5">
+    @for (p of visibles(); track p.idPago) {
+      <app-fila [principal]="p.miembro" [secundario]="'Pago #' + p.idPago + ' · ' + p.metodo" [meta]="(p.monto | cop) + ' · ' + (p.fechaPago | fecha)" />
+    } @empty { <app-vacio /> }
+  </div>
+</app-panel>
