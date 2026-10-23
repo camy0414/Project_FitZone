@@ -1,0 +1,93 @@
+<main class="relative min-h-screen overflow-hidden bg-[#0d0d0e] text-white">
+  <div class="absolute inset-0">
+    <img src="fitzone-login.jpg" alt="Atleta entrenando al atardecer" class="absolute inset-0 size-full object-cover object-center opacity-35" />
+    <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(10,10,11,.98)_0%,rgba(10,10,11,.88)_46%,rgba(10,10,11,.45)_100%)]"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_78%_28%,rgba(249,115,22,.32),transparent_28%)]"></div>
+  </div>
+
+  <div class="relative z-10 mx-auto grid min-h-screen max-w-7xl items-center gap-16 px-6 py-10 lg:grid-cols-[1.1fr_.9fr] lg:px-10">
+    <section class="hidden max-w-2xl lg:block">
+      <div class="mb-10 flex items-center gap-3">
+        <div class="grid size-12 place-items-center rounded-2xl bg-orange-500 text-black shadow-[0_0_40px_rgba(249,115,22,.4)]">
+          <app-icon name="dumbbell" cls="size-7" [sw]="2.5" />
+        </div>
+        <div>
+          <p class="text-2xl font-black tracking-tight">FIT ZONE</p>
+          <p class="text-xs font-bold tracking-[.26em] text-orange-400">CONTROL CENTER</p>
+        </div>
+      </div>
+      <p class="mb-5 text-sm font-bold uppercase tracking-[.28em] text-orange-400">Toda la cadena. Un solo pulso.</p>
+      <h1 class="max-w-xl text-6xl font-black leading-[.96] tracking-[-.055em]">Gestiona cada sede con la energía de tu equipo.</h1>
+      <p class="mt-7 max-w-lg text-lg leading-8 text-zinc-300">
+        Miembros, pagos, clases, asistencia y equipos en una plataforma diseñada para el personal de FitZone.
+      </p>
+      <div class="mt-10 flex gap-8">
+        @for (s of [['3', 'sedes conectadas'], ['4', 'roles de acceso'], ['2', 'bases de datos']]; track s[1]) {
+          <div>
+            <p class="text-2xl font-black text-white">{{ s[0] }}</p>
+            <p class="mt-1 text-sm text-zinc-400">{{ s[1] }}</p>
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="mx-auto w-full max-w-md">
+      <div class="rounded-[2rem] border border-white/10 bg-zinc-950/75 p-7 shadow-2xl shadow-black/40 backdrop-blur-xl sm:p-9">
+        <div class="mb-8">
+          <div class="mb-5 grid size-11 place-items-center rounded-xl bg-orange-500/15 text-orange-400">
+            <app-icon name="shield" cls="size-6" />
+          </div>
+          <h2 class="text-3xl font-black tracking-tight">Bienvenido de vuelta</h2>
+          <p class="mt-2 text-sm leading-6 text-zinc-400">Ingresa con las credenciales asignadas a tu rol.</p>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="entrar()" class="space-y-5">
+          <label class="block">
+            <span class="mb-2 block text-sm font-semibold text-zinc-300">Correo</span>
+            <span class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[.04] px-4 transition focus-within:border-orange-500/70 focus-within:bg-white/[.07]">
+              <app-icon name="mail" cls="size-4 text-zinc-500" />
+              <input formControlName="correo" type="email" autocomplete="username" placeholder="nombre@fitzone.co" class="h-12 w-full bg-transparent text-sm outline-none placeholder:text-zinc-600" />
+            </span>
+            @if (form.controls.correo.touched && form.controls.correo.invalid) {
+              <span class="mt-1 block text-xs text-red-300">Escribe un correo válido.</span>
+            }
+          </label>
+          <label class="block">
+            <span class="mb-2 block text-sm font-semibold text-zinc-300">Contraseña</span>
+            <span class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[.04] px-4 transition focus-within:border-orange-500/70 focus-within:bg-white/[.07]">
+              <app-icon name="lock" cls="size-4 text-zinc-500" />
+              <input formControlName="clave" type="password" autocomplete="current-password" placeholder="••••••••" class="h-12 w-full bg-transparent text-sm outline-none placeholder:text-zinc-600" />
+            </span>
+            @if (form.controls.clave.touched && form.controls.clave.invalid) {
+              <span class="mt-1 block text-xs text-red-300">Escribe tu contraseña.</span>
+            }
+          </label>
+
+          @if (error()) {
+            <p class="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">{{ error() }}</p>
+          }
+
+          <button type="submit" [disabled]="cargando()" class="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-orange-500 font-extrabold text-black transition hover:bg-orange-400 disabled:cursor-wait disabled:opacity-60">
+            {{ cargando() ? 'Ingresando…' : 'Entrar al sistema' }}
+            <app-icon name="arrow-right" cls="size-4 transition group-hover:translate-x-1" />
+          </button>
+        </form>
+
+        @if (mock) {
+          <div class="mt-6 rounded-xl border border-orange-500/20 bg-orange-500/5 px-4 py-3">
+            <p class="mb-2 text-xs font-bold text-orange-400">Modo demostración: toca un rol para llenar el formulario</p>
+            <div class="flex flex-wrap gap-2">
+              @for (d of demo; track d[0]) {
+                <button type="button" (click)="usarDemo(d[1])" class="rounded-lg border border-white/10 px-3 py-1.5 text-xs font-semibold text-zinc-300 transition hover:border-orange-500 hover:text-orange-400">{{ d[0] }}</button>
+              }
+            </div>
+          </div>
+        }
+
+        <div class="mt-5 rounded-xl border border-white/8 bg-white/[.025] px-4 py-3">
+          <p class="text-xs leading-5 text-zinc-500">Acceso exclusivo para personal autorizado. La actividad queda asociada a tu usuario.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>

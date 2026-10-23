@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html { background: #f5f4f1; }
+body { margin: 0; font-family: var(--font-sans); }
+button, input { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+::selection { background: #f97316; color: #111112; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { border: 2px solid transparent; border-radius: 999px; background: #d4d4d8; background-clip: padding-box; }
+
+/* ---- Estilos reutilizables de formularios y botones ---- */
+.fz-label { display: block; margin-bottom: 0.375rem; font-size: 0.75rem; font-weight: 700; color: #52525b; }
+.fz-input {
+  height: 2.75rem; width: 100%; border-radius: 0.75rem; border: 1px solid rgb(0 0 0 / 0.12);
+  background: #fff; padding: 0 0.75rem; font-size: 0.875rem; outline: none; transition: border-color .15s;
+}
+.fz-input:focus { border-color: #f97316; }
+.fz-input.ng-invalid.ng-touched { border-color: #ef4444; }
+textarea.fz-input { height: auto; padding: 0.625rem 0.75rem; }
+.fz-btn {
+  border-radius: 0.75rem; background: #f97316; padding: 0.625rem 1rem; font-size: 0.75rem;
+  font-weight: 900; color: #000; transition: background-color .15s;
+}
+.fz-btn:hover:not(:disabled) { background: #fb923c; }
+.fz-btn:disabled { opacity: .6; }
+.fz-btn-ghost {
+  border-radius: 0.75rem; border: 1px solid rgb(0 0 0 / 0.1); padding: 0.625rem 1rem;
+  font-size: 0.75rem; font-weight: 700; color: #52525b; transition: all .15s;
+}
+.fz-btn-ghost:hover:not(:disabled) { border-color: #fdba74; color: #ea580c; }
+.fz-error { margin-top: 0.25rem; font-size: 0.7rem; color: #dc2626; }

@@ -1,0 +1,270 @@
+@if (cargando()) {
+  <p class="py-24 text-center text-sm font-semibold text-zinc-400">Cargando información…</p>
+} @else {
+  <section class="relative mb-7 overflow-hidden rounded-[2rem] bg-[#171718] px-6 py-7 text-white sm:px-9 sm:py-9">
+    <div class="absolute -right-12 -top-20 size-72 rounded-full bg-orange-500/20 blur-3xl"></div>
+    <div class="absolute bottom-0 right-10 hidden h-full w-80 opacity-15 lg:block">
+      <div class="absolute bottom-[-65%] right-0 size-80 rounded-full border-[42px] border-orange-500"></div>
+      <app-icon name="zap" cls="absolute right-24 top-7 size-28 text-orange-500" />
+    </div>
+    <div class="relative">
+      <div class="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-[.2em] text-orange-400">
+        <app-icon name="activity" cls="size-4" />
+        {{ esEntrenador() ? 'Tu jornada de entrenamiento' : 'Estado de la operación' }}
+      </div>
+      <h1 class="max-w-2xl text-3xl font-black tracking-[-.035em] sm:text-4xl">
+        {{ esEntrenador() ? '¿Listo para activar la zona, ' + primerNombre() + '?' : 'Hola, ' + primerNombre() + '. FitZone está en movimiento.' }}
+      </h1>
+      <p class="mt-3 max-w-xl text-sm leading-6 text-zinc-400">
+        @if (esEntrenador()) {
+          Consulta tus próximas sesiones y registra la asistencia de tus grupos.
+        } @else if (esAdmin()) {
+          Tienes visibilidad completa de miembros, ingresos, clases y equipos en todas las sedes.
+        } @else {
+          Estás viendo la información de {{ usuario()?.sede }}.
+        }
+      </p>
+    </div>
+  </section>
+
+  <!-- Tarjetas de indicadores -->
+  <section class="mb-7 grid gap-4 sm:grid-cols-2" [class]="columnas()">
+    @if (!esEntrenador()) {
+      <article class="rounded-2xl border border-orange-500 bg-orange-500 p-5 text-black">
+        <div class="mb-5 flex items-start justify-between">
+          <span class="grid size-10 place-items-center rounded-xl bg-black/10"><app-icon name="users" /></span>
+        </div>
+        <p class="text-2xl font-black tracking-tight">{{ miembros().length }}</p>
+        <p class="mt-1 text-xs font-bold text-black/60">Miembros</p>
+      </article>
+      <article class="rounded-2xl border border-black/5 bg-white p-5">
+        <div class="mb-5 flex items-start justify-between">
+          <span class="grid size-10 place-items-center rounded-xl bg-orange-500/10 text-orange-600"><app-icon name="shield" /></span>
+        </div>
+        <p class="text-2xl font-black tracking-tight">{{ activas() }}</p>
+        <p class="mt-1 text-xs font-bold text-zinc-500">Membresías activas</p>
+      </article>
+      <article class="rounded-2xl border border-black/5 bg-white p-5">
+        <div class="mb-5 flex items-start justify-between">
+          <span class="grid size-10 place-items-center rounded-xl bg-orange-500/10 text-orange-600"><app-icon name="dollar" /></span>
+        </div>
+        <p class="text-2xl font-black tracking-tight">{{ ingresos30() | cop }}</p>
+        <p class="mt-1 text-xs font-bold text-zinc-500">Ingresos últimos 30 días</p>
+      </article>
+    }
+    <article class="rounded-2xl border bg-white p-5" [class]="esEntrenador() ? 'border-orange-500 !bg-orange-500 text-black' : 'border-black/5'">
+      <div class="mb-5 flex items-start justify-between">
+        <span class="grid size-10 place-items-center rounded-xl" [class]="esEntrenador() ? 'bg-black/10' : 'bg-orange-500/10 text-orange-600'"><app-icon name="calendar" /></span>
+      </div>
+      <p class="text-2xl font-black tracking-tight">{{ sesionesHoy() }}</p>
+      <p class="mt-1 text-xs font-bold" [class]="esEntrenador() ? 'text-black/60' : 'text-zinc-500'">Sesiones hoy</p>
+    </article>
+    <article class="rounded-2xl border border-black/5 bg-white p-5">
+      <div class="mb-5 flex items-start justify-between">
+        <span class="grid size-10 place-items-center rounded-xl bg-orange-500/10 text-orange-600"><app-icon name="clipboard" /></span>
+      </div>
+      <p class="text-2xl font-black tracking-tight">{{ inscripcionesProx() }}</p>
+      <p class="mt-1 text-xs font-bold text-zinc-500">Inscritos en sesiones próximas</p>
+    </article>
+    @if (verEquipos()) {
+      <article class="rounded-2xl border border-black/5 bg-white p-5">
+        <div class="mb-5 flex items-start justify-between">
+          <span class="grid size-10 place-items-center rounded-xl" [class]="alertas() > 0 ? 'bg-red-500/10 text-red-500' : 'bg-orange-500/10 text-orange-600'"><app-icon name="wrench" /></span>
+        </div>
+        <p class="text-2xl font-black tracking-tight">{{ alertas() }}</p>
+        <p class="mt-1 text-xs font-bold text-zinc-500">Equipos en mantenimiento</p>
+      </article>
+    }
+  </section>
+
+  <section class="grid gap-6 xl:grid-cols-[1.45fr_.8fr]">
+    <div class="space-y-6">
+      <!-- Gráfico / próximas sesiones del entrenador -->
+      <article class="rounded-[1.75rem] border border-black/5 bg-white p-6">
+        <div class="mb-6">
+          <h2 class="text-lg font-black tracking-tight">{{ esEntrenador() ? 'Próximas sesiones' : 'Inscripciones por día' }}</h2>
+          <p class="mt-1 text-xs text-zinc-400">{{ esEntrenador() ? 'Tus grupos y ocupación programada' : 'Inscritos en las sesiones de los últimos 7 días' }}</p>
+        </div>
+
+        @if (esEntrenador()) {
+          <div class="space-y-3">
+            @for (s of proximas(); track s.numeroSesion) {
+              <div class="flex flex-wrap items-center gap-4 rounded-2xl border border-black/5 bg-zinc-50 p-4">
+                <span class="grid size-12 place-items-center rounded-xl bg-orange-500 text-black"><app-icon name="dumbbell" /></span>
+                <div class="min-w-40 flex-1">
+                  <p class="font-black">{{ s.clase }}</p>
+                  <p class="mt-1 text-xs text-zinc-400">{{ s.sede }} · {{ s.fecha | fecha }} · {{ s.horaInicio }}</p>
+                </div>
+                <div class="min-w-28">
+                  <p class="text-right text-xs font-bold">{{ s.inscritos }}/{{ s.cupoMaximo }}</p>
+                  <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-zinc-200">
+                    <div class="h-full rounded-full bg-orange-500" [style.width.%]="pct(s)"></div>
+                  </div>
+                </div>
+                <a routerLink="/asistencia" class="rounded-xl bg-zinc-900 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-orange-500 hover:text-black">Asistencia</a>
+              </div>
+            } @empty {
+              <p class="py-8 text-center text-sm text-zinc-400">No tienes sesiones programadas.</p>
+            }
+          </div>
+        } @else {
+          <div class="flex h-64 items-end gap-3">
+            @for (b of barras(); track $index) {
+              <div class="flex h-full flex-1 flex-col justify-end gap-2">
+                <div class="relative flex-1">
+                  <div class="absolute inset-x-0 bottom-0 rounded-t-xl transition-all duration-700" [class]="b.hoy ? 'bg-orange-500' : 'bg-zinc-100'" [style.height.%]="b.alto">
+                    @if (b.valor > 0) {
+                      <span class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-lg bg-zinc-900 px-2 py-1 text-[10px] font-bold text-white">{{ b.valor }}</span>
+                    }
+                  </div>
+                </div>
+                <p class="text-center text-[10px] font-bold text-zinc-400">{{ b.etiqueta }}</p>
+              </div>
+            }
+          </div>
+        }
+      </article>
+
+      @if (!esEntrenador()) {
+        <article class="overflow-hidden rounded-[1.75rem] border border-black/5 bg-white">
+          <div class="flex items-center justify-between border-b border-black/5 px-6 py-5">
+            <div>
+              <h2 class="text-lg font-black tracking-tight">Últimos movimientos</h2>
+              <p class="mt-1 text-xs text-zinc-400">Pagos registrados</p>
+            </div>
+            <a routerLink="/pagos" class="flex items-center gap-1 text-xs font-bold text-orange-600">Ver todos <app-icon name="chevron-right" cls="size-4" /></a>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[620px] text-left">
+              <thead class="bg-zinc-50 text-[10px] uppercase tracking-wider text-zinc-400">
+                <tr>
+                  <th class="px-6 py-3 font-bold">Miembro</th>
+                  <th class="px-4 py-3 font-bold">Método</th>
+                  <th class="px-4 py-3 font-bold">Fecha</th>
+                  <th class="px-6 py-3 text-right font-bold">Monto</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-black/5">
+                @for (p of pagosRecientes(); track p.idPago) {
+                  <tr class="text-sm transition hover:bg-orange-50/40">
+                    <td class="px-6 py-4">
+                      <div class="flex items-center gap-3">
+                        <app-avatar [nombre]="p.miembro" />
+                        <div>
+                          <p class="font-bold">{{ p.miembro }}</p>
+                          <p class="text-[11px] text-zinc-400">Pago #{{ p.idPago }}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-4 py-4 text-xs capitalize text-zinc-500">{{ p.metodo }}</td>
+                    <td class="px-4 py-4 text-xs text-zinc-500">{{ p.fechaPago | fecha }}</td>
+                    <td class="px-6 py-4 text-right font-black">{{ p.monto | cop }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </article>
+      }
+    </div>
+
+    <div class="space-y-6">
+      <article class="rounded-[1.75rem] border border-black/5 bg-white p-6">
+        <div class="mb-5 flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-black tracking-tight">Próximas clases</h2>
+            <p class="mt-1 text-xs text-zinc-400">Agenda</p>
+          </div>
+          <app-icon name="calendar" cls="size-5 text-orange-500" />
+        </div>
+        <div class="space-y-4">
+          @for (s of proximas(); track s.numeroSesion; let i = $index) {
+            <div class="group flex gap-3">
+              <div class="flex w-12 shrink-0 flex-col items-center rounded-xl bg-zinc-100 py-2 transition group-hover:bg-orange-500 group-hover:text-black">
+                <span class="text-[9px] font-bold uppercase">{{ diaMes(s.fecha).mes }}</span>
+                <span class="text-lg font-black leading-5">{{ diaMes(s.fecha).dia }}</span>
+              </div>
+              <div class="flex-1" [class]="i < 3 ? 'border-b border-black/5 pb-4' : ''">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <p class="text-sm font-black">{{ s.clase }}</p>
+                    <p class="mt-1 text-[11px] text-zinc-400">{{ s.entrenador }} · {{ s.sede }}</p>
+                  </div>
+                  <span class="text-[11px] font-bold text-orange-600">{{ s.horaInicio }}</span>
+                </div>
+                <div class="mt-2 flex items-center gap-2">
+                  <div class="h-1 flex-1 overflow-hidden rounded-full bg-zinc-100">
+                    <div class="h-full rounded-full bg-orange-500" [style.width.%]="pct(s)"></div>
+                  </div>
+                  <span class="text-[9px] font-bold text-zinc-400">{{ s.inscritos }}/{{ s.cupoMaximo }}</span>
+                </div>
+              </div>
+            </div>
+          } @empty {
+            <p class="py-6 text-center text-sm text-zinc-400">No hay sesiones próximas.</p>
+          }
+        </div>
+      </article>
+
+      @if (esAdmin()) {
+        <article class="rounded-[1.75rem] bg-orange-500 p-6 text-black">
+          <div class="mb-6 flex items-center justify-between">
+            <span class="grid size-11 place-items-center rounded-xl bg-black text-orange-500"><app-icon name="building" /></span>
+            <span class="rounded-full bg-black/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider">{{ sedes().length }} sedes</span>
+          </div>
+          <h2 class="text-xl font-black tracking-tight">Sedes</h2>
+          <p class="mt-1 text-xs font-medium text-black/60">Sedes de la cadena</p>
+          <div class="mt-5 space-y-2">
+            @for (s of sedes(); track s.idSede) {
+              <div class="flex items-center justify-between rounded-xl bg-black/10 px-3 py-2.5">
+                <div class="flex items-center gap-2">
+                  <span class="size-2 rounded-full bg-black"></span>
+                  <span class="text-xs font-bold">{{ s.nombre }}</span>
+                </div>
+                <span class="text-[10px] font-black">{{ s.telefono }}</span>
+              </div>
+            }
+          </div>
+        </article>
+      } @else {
+        <article class="rounded-[1.75rem] bg-[#171718] p-6 text-white">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-[.18em] text-orange-400">Ocupación promedio</p>
+              <p class="mt-3 text-4xl font-black">{{ ocupacion() }}%</p>
+            </div>
+            <app-icon name="activity" cls="size-6 text-orange-500" />
+          </div>
+          <div class="mt-6 h-2 overflow-hidden rounded-full bg-white/10">
+            <div class="h-full rounded-full bg-orange-500" [style.width.%]="ocupacion()"></div>
+          </div>
+          <p class="mt-3 text-xs leading-5 text-zinc-400">Inscritos frente al cupo de las sesiones.</p>
+        </article>
+      }
+
+      @if (verEquipos()) {
+        <article class="rounded-[1.75rem] border border-black/5 bg-white p-6">
+          <div class="mb-5 flex items-center justify-between">
+            <div>
+              <h2 class="text-lg font-black tracking-tight">Equipos</h2>
+              <p class="mt-1 text-xs text-zinc-400">Atención operativa</p>
+            </div>
+            <app-icon name="wrench" cls="size-5 text-zinc-300" />
+          </div>
+          <div class="space-y-3">
+            @for (e of equipos().slice(0, 4); track e.idEquipo) {
+              <div class="flex items-center gap-3 rounded-xl bg-zinc-50 p-3">
+                <span class="grid size-9 place-items-center rounded-lg bg-white text-zinc-500 shadow-sm"><app-icon name="dumbbell" cls="size-4" /></span>
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-xs font-bold">{{ e.nombre }}</p>
+                  <p class="mt-0.5 text-[10px] text-zinc-400">{{ e.sede }}</p>
+                </div>
+                <app-status-pill [status]="e.estado" />
+              </div>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+}

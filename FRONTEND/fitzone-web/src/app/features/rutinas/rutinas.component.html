@@ -1,0 +1,113 @@
+<app-panel [titulo]="esEntrenador() ? 'Rutinas de mis miembros' : 'Rutinas'" descripcion="Rutinas de entrenamiento guardadas en MongoDB, con sus ejercicios." [cargando]="cargando()">
+  @if (esEntrenador()) { <button acciones type="button" class="fz-btn" (click)="nueva()">Nueva rutina</button> }
+  <div class="divide-y divide-black/5">
+    @for (r of visibles(); track r.idRutina) {
+      <div class="px-6 py-4">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-sm font-black">{{ r.nombreRutina }}</p>
+            <p class="mt-1 truncate text-xs text-zinc-400">{{ r.miembro }} · {{ r.objetivo || 'Sin objetivo' }}</p>
+          </div>
+          <p class="text-xs font-bold text-zinc-500 sm:text-right">{{ r.entrenador }} · {{ r.sede }}<br /><span class="font-medium text-zinc-400">{{ r.fechaCreacion | fecha: true }}</span></p>
+          <app-status-pill [status]="r.activa ? 'activa' : 'inactiva'" />
+          <div class="flex gap-2">
+            <button type="button" class="fz-btn-ghost" (click)="alternarDetalle(r.idRutina)">{{ abiertas().has(r.idRutina) ? 'Ocultar' : 'Ver ejercicios' }}</button>
+            @if (esEntrenador()) { <button type="button" class="fz-btn-ghost" (click)="alternar(r)">{{ r.activa ? 'Desactivar' : 'Activar' }}</button> }
+          </div>
+        </div>
+        @if (abiertas().has(r.idRutina)) {
+          <div class="mt-4 rounded-2xl border border-black/5 bg-zinc-50 p-4">
+            <ul class="divide-y divide-black/5">
+              @for (e of r.ejercicios; track $index) {
+                <li class="flex flex-wrap items-center gap-x-3 gap-y-1 py-2 text-sm">
+                  <span class="rounded-full bg-orange-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-orange-600">{{ e.tipo }}</span>
+                  <span class="font-bold">{{ e.nombre }}</span>
+                  <span class="text-zinc-500">{{ detalle(e) }}</span>
+                  @if (e.notas) { <span class="text-xs text-zinc-400">— {{ e.notas }}</span> }
+                </li>
+              }
+            </ul>
+            @if (r.notasEntrenador) { <p class="mt-3 text-xs text-zinc-500"><b>Notas del entrenador:</b> {{ r.notasEntrenador }}</p> }
+          </div>
+        }
+      </div>
+    } @empty { <app-vacio /> }
+  </div>
+</app-panel>
+
+@if (abierto()) {
+  <app-modal titulo="Nueva rutina" (cerrar)="abierto.set(false)">
+    <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-4">
+      <div>
+        <label class="fz-label" for="mi">Miembro ({{ usuario()?.sede }}) *</label>
+        <select id="mi" class="fz-input" formControlName="idMiembro">
+          <option [ngValue]="0" disabled>Selecciona…</option>
+          @for (m of miembros(); track m.idMiembro) { <option [ngValue]="m.idMiembro">{{ m.nombreCompleto }}</option> }
+        </select>
+        @if (form.controls.idMiembro.touched && form.controls.idMiembro.invalid) { <p class="fz-error">Selecciona un miembro.</p> }
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label class="fz-label" for="nr">Nombre de la rutina *</label>
+          <input id="nr" class="fz-input" formControlName="nombreRutina" maxlength="100" />
+          @if (form.controls.nombreRutina.touched && form.controls.nombreRutina.invalid) { <p class="fz-error">Obligatorio.</p> }
+        </div>
+        <div>
+          <label class="fz-label" for="ob">Objetivo</label>
+          <input id="ob" class="fz-input" formControlName="objetivo" maxlength="100" />
+        </div>
+      </div>
+
+      <div>
+        <div class="mb-2 flex items-center justify-between">
+          <p class="fz-label !mb-0">Ejercicios *</p>
+          <button type="button" class="fz-btn-ghost" (click)="agregarEjercicio()">Agregar ejercicio</button>
+        </div>
+        <div formArrayName="ejercicios" class="space-y-3">
+          @for (g of ejercicios.controls; track $index; let i = $index) {
+            <div [formGroupName]="i" class="rounded-2xl border border-black/10 bg-zinc-50 p-3">
+              <div class="grid gap-3 sm:grid-cols-[1fr_9rem_auto]">
+                <div>
+                  <input class="fz-input" formControlName="nombre" placeholder="Nombre del ejercicio" aria-label="Nombre del ejercicio" />
+                  @if (g.get('nombre')?.touched && g.get('nombre')?.invalid) { <p class="fz-error">Obligatorio.</p> }
+                </div>
+                <select class="fz-input" formControlName="tipo" aria-label="Tipo de ejercicio">
+                  @for (t of tipos; track t) { <option [value]="t">{{ t }}</option> }
+                </select>
+                <button type="button" class="fz-btn-ghost" [disabled]="ejercicios.length === 1" (click)="quitarEjercicio(i)">Quitar</button>
+              </div>
+              <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                @switch (tipoDe(i)) {
+                  @case ('fuerza') {
+                    <input type="number" min="1" class="fz-input" formControlName="series" placeholder="Series *" aria-label="Series" />
+                    <input type="number" min="1" class="fz-input" formControlName="repeticiones" placeholder="Repeticiones *" aria-label="Repeticiones" />
+                    <input type="number" min="0" step="0.5" class="fz-input" formControlName="pesoKg" placeholder="Peso (kg)" aria-label="Peso en kg" />
+                  }
+                  @case ('cardio') {
+                    <input type="number" min="1" class="fz-input" formControlName="duracionMin" placeholder="Minutos *" aria-label="Duración en minutos" />
+                    <input type="number" min="0" step="0.1" class="fz-input" formControlName="distanciaKm" placeholder="Distancia (km)" aria-label="Distancia en km" />
+                  }
+                  @case ('movilidad') {
+                    <input type="number" min="1" class="fz-input" formControlName="series" placeholder="Series *" aria-label="Series" />
+                    <input type="number" min="1" class="fz-input" formControlName="duracionSeg" placeholder="Segundos *" aria-label="Duración en segundos" />
+                  }
+                }
+                <input class="fz-input col-span-2" formControlName="notas" placeholder="Notas" aria-label="Notas" />
+              </div>
+            </div>
+          }
+        </div>
+        <p class="mt-1 text-[11px] text-zinc-400">Los campos con * dependen del tipo: fuerza (series y repeticiones), cardio (minutos), movilidad (series y segundos).</p>
+      </div>
+      <div>
+        <label class="fz-label" for="nt">Notas del entrenador</label>
+        <input id="nt" class="fz-input" formControlName="notasEntrenador" />
+      </div>
+      @if (error()) { <p class="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">{{ error() }}</p> }
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" class="fz-btn-ghost" (click)="abierto.set(false)">Cancelar</button>
+        <button type="submit" class="fz-btn" [disabled]="enviando()">{{ enviando() ? 'Guardando…' : 'Crear rutina' }}</button>
+      </div>
+    </form>
+  </app-modal>
+}

@@ -1,0 +1,12 @@
+<div class="group flex flex-col gap-3 px-6 py-4 transition hover:bg-orange-50/40 sm:flex-row sm:items-center">
+  <span class="grid size-11 shrink-0 place-items-center rounded-xl bg-zinc-100 font-black text-zinc-600 transition group-hover:bg-orange-500 group-hover:text-black">{{ principal().slice(0, 2).toUpperCase() }}</span>
+  <div class="min-w-0 flex-1">
+    <p class="truncate text-sm font-black">{{ principal() }}</p>
+    <p class="mt-1 truncate text-xs text-zinc-400">{{ secundario() }}</p>
+  </div>
+  <p class="text-xs font-bold text-zinc-500 sm:min-w-40 sm:text-right">{{ meta() }}</p>
+  @if (estado()) {
+    <div class="sm:min-w-32 sm:text-right"><app-status-pill [status]="estado()" /></div>
+  }
+  <ng-content />
+</div>
