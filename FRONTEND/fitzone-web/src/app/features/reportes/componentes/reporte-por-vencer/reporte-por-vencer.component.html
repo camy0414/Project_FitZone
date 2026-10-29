@@ -1,0 +1,19 @@
+@if (filas().length) {
+  <div class="divide-y divide-black/5 border-t border-black/5">
+    @for (f of filas(); track f.idMembresia) {
+      <div class="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center">
+        <div class="min-w-0 flex-1">
+          <p class="truncate text-sm font-black">{{ f.miembro }}</p>
+          <p class="mt-1 truncate text-xs text-zinc-400">{{ f.telefono }} · {{ f.correo }}</p>
+        </div>
+        <p class="text-xs font-bold text-zinc-500 sm:min-w-48 sm:text-right">
+          Plan {{ f.plan }} · {{ f.sede }}<br />vence el {{ f.fechaFin | fecha: true }}
+        </p>
+        <span class="inline-flex w-fit rounded-full px-2.5 py-1 text-[11px] font-bold sm:min-w-24 sm:justify-center" [class]="urgencia(f.diasRestantes)">{{ texto(f.diasRestantes) }}</span>
+        <a class="fz-btn-ghost text-center" [routerLink]="['/miembros', f.idMiembro]">Ver miembro</a>
+      </div>
+    }
+  </div>
+} @else {
+  <app-vacio mensaje="Ninguna membresía vence en ese periodo." detalle="Prueba con un plazo más largo." />
+}

@@ -1,0 +1,58 @@
+<app-panel titulo="Reportes" [descripcion]="actual().descripcion">
+
+  <div class="flex gap-1 overflow-x-auto border-b border-black/5 px-4" role="tablist" aria-label="Tipo de reporte">
+    @for (p of pestanas(); track p.id) {
+      <button type="button" role="tab" [attr.aria-selected]="pestana() === p.id" (click)="elegir(p.id)"
+        class="whitespace-nowrap border-b-2 px-3 py-3 text-xs font-bold transition"
+        [class]="pestana() === p.id ? 'border-orange-500 text-black' : 'border-transparent text-zinc-400 hover:text-zinc-700'">
+        {{ p.etiqueta }}
+      </button>
+    }
+  </div>
+
+  <div class="flex flex-col gap-3 border-b border-black/5 px-6 py-4 sm:flex-row sm:flex-wrap sm:items-end">
+    @if (pestana() === 'vencer') {
+      <div class="sm:w-44">
+        <label class="fz-label" for="dias">Vencen en los próximos</label>
+        <select id="dias" class="fz-input" [ngModel]="dias()" (ngModelChange)="dias.set(+$event); cargar()">
+          @for (o of opcionesDias; track o) { <option [ngValue]="o">{{ o }} días</option> }
+        </select>
+      </div>
+    } @else {
+      <div class="sm:w-44">
+        <label class="fz-label" for="desde">Desde</label>
+        <input id="desde" type="date" class="fz-input" [ngModel]="desde()" (ngModelChange)="desde.set($event)" />
+      </div>
+      <div class="sm:w-44">
+        <label class="fz-label" for="hasta">Hasta</label>
+        <input id="hasta" type="date" class="fz-input" [ngModel]="hasta()" (ngModelChange)="hasta.set($event)" />
+      </div>
+    }
+    @if (esAdmin()) {
+      <div class="sm:w-56">
+        <label class="fz-label" for="sede">Sede</label>
+        <select id="sede" class="fz-input" [ngModel]="idSede()" (ngModelChange)="idSede.set($event); cargar()">
+          <option [ngValue]="null">Todas las sedes</option>
+          @for (s of sedes(); track s.idSede) { <option [ngValue]="s.idSede">{{ s.nombre }}</option> }
+        </select>
+      </div>
+    } @else {
+      <p class="text-xs font-bold text-zinc-500 sm:pb-3">Sede: {{ usuario()?.sede }}</p>
+    }
+    @if (pestana() !== 'vencer') {
+      <button type="button" class="fz-btn sm:mb-px" [disabled]="!rangoValido() || cargando()" (click)="cargar()">Consultar</button>
+    }
+    @if (!rangoValido()) { <p class="fz-error sm:pb-3">La fecha inicial debe ser anterior a la final.</p> }
+  </div>
+
+  @if (cargando()) {
+    <p class="px-6 py-16 text-center text-sm font-semibold text-zinc-400">Consultando…</p>
+  } @else {
+    @switch (pestana()) {
+      @case ('ingresos') { <app-reporte-ingresos [filas]="ingresos()" /> }
+      @case ('ocupacion') { <app-reporte-ocupacion [filas]="ocupacion()" /> }
+      @case ('vencer') { <app-reporte-por-vencer [filas]="porVencer()" /> }
+      @case ('mantenimiento') { <app-reporte-mantenimientos [filas]="mantenimientos()" /> }
+    }
+  }
+</app-panel>
