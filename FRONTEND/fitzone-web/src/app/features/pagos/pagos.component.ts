@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DataService } from '../../core/data.service';
 import { Pago } from '../../core/models';
 import { FilaComponent } from '../../shared/components/fila/fila.component';
@@ -10,6 +10,7 @@ import { SearchService } from '../../shared/services/search.service';
 
 @Component({
   selector: 'app-pagos',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [PanelComponent, FilaComponent, VacioComponent, CopPipe, FechaPipe],
   templateUrl: './pagos.component.html',
 })
