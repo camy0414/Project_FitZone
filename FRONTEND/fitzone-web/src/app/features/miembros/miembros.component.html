@@ -1,88 +1,14 @@
 <app-panel titulo="Miembros" descripcion="Personas inscritas en el gimnasio y el plan de su membresía vigente." [cargando]="cargando()">
-  @if (puedeCrear()) { <button acciones type="button" class="fz-btn" (click)="nuevo()">Registrar miembro</button> }
+  @if (puedeCrear()) { <button acciones type="button" class="fz-btn" (click)="abierto.set(true)">Registrar miembro</button> }
   <div class="divide-y divide-black/5">
     @for (m of visibles(); track m.idMiembro) {
-      <app-fila [principal]="m.nombreCompleto" [secundario]="m.correo" [meta]="m.sede + (m.planActual ? ' · ' + m.planActual : '')" [estado]="m.planActual ? 'activa' : 'sin membresía'" />
+      <app-fila [principal]="m.nombreCompleto" [secundario]="m.correo + ' · registrado ' + (m.fechaRegistro | fecha: true)" [meta]="m.sede + (m.planActual ? ' · ' + m.planActual : '')" [estado]="m.planActual ? 'activa' : 'sin membresía'">
+        <a class="fz-btn-ghost" [routerLink]="['/miembros', m.idMiembro]" [attr.aria-label]="'Ver detalle de ' + m.nombreCompleto">Ver</a>
+      </app-fila>
     } @empty { <app-vacio /> }
   </div>
 </app-panel>
 
 @if (abierto()) {
-  <app-modal titulo="Registrar miembro" (cerrar)="abierto.set(false)">
-    <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-4">
-      <div class="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label class="fz-label" for="pn">Primer nombre *</label>
-          <input id="pn" class="fz-input" formControlName="primerNombre" maxlength="30" />
-          @if (form.controls.primerNombre.touched && form.controls.primerNombre.invalid) { <p class="fz-error">Obligatorio.</p> }
-        </div>
-        <div>
-          <label class="fz-label" for="sn">Segundo nombre</label>
-          <input id="sn" class="fz-input" formControlName="segundoNombre" maxlength="30" />
-        </div>
-        <div>
-          <label class="fz-label" for="pa">Primer apellido *</label>
-          <input id="pa" class="fz-input" formControlName="primerApellido" maxlength="30" />
-          @if (form.controls.primerApellido.touched && form.controls.primerApellido.invalid) { <p class="fz-error">Obligatorio.</p> }
-        </div>
-        <div>
-          <label class="fz-label" for="sa">Segundo apellido</label>
-          <input id="sa" class="fz-input" formControlName="segundoApellido" maxlength="30" />
-        </div>
-        <div>
-          <label class="fz-label" for="tel">Teléfono *</label>
-          <input id="tel" class="fz-input" formControlName="telefono" maxlength="15" />
-          @if (form.controls.telefono.touched && form.controls.telefono.invalid) { <p class="fz-error">Obligatorio.</p> }
-        </div>
-        <div>
-          <label class="fz-label" for="cor">Correo *</label>
-          <input id="cor" type="email" class="fz-input" formControlName="correo" maxlength="60" />
-          @if (form.controls.correo.touched && form.controls.correo.invalid) { <p class="fz-error">Escribe un correo válido.</p> }
-        </div>
-      </div>
-      @if (esAdmin()) {
-        <div>
-          <label class="fz-label" for="sed">Sede *</label>
-          <select id="sed" class="fz-input" formControlName="idSede">
-            <option [ngValue]="0" disabled>Selecciona…</option>
-            @for (s of sedes(); track s.idSede) { <option [ngValue]="s.idSede">{{ s.nombre }}</option> }
-          </select>
-          @if (form.controls.idSede.touched && form.controls.idSede.invalid) { <p class="fz-error">Selecciona una sede.</p> }
-        </div>
-      } @else {
-        <p class="rounded-xl bg-zinc-100 px-4 py-3 text-sm text-zinc-600">Se registrará en tu sede: <b>{{ usuario()?.sede }}</b>.</p>
-      }
-
-      <label class="flex cursor-pointer items-center gap-2 text-sm font-bold">
-        <input type="checkbox" [checked]="conMedica()" (change)="alternarMedica()" class="size-4 accent-orange-500" />
-        Registrar información médica (opcional)
-      </label>
-      @if (conMedica()) {
-        <div class="grid gap-4 rounded-2xl border border-black/5 bg-zinc-50 p-4 sm:grid-cols-2">
-          <div>
-            <label class="fz-label" for="ce">Contacto de emergencia *</label>
-            <input id="ce" class="fz-input" formControlName="contactoEmergencia" maxlength="60" />
-            @if (form.controls.contactoEmergencia.touched && form.controls.contactoEmergencia.invalid) { <p class="fz-error">Obligatorio.</p> }
-          </div>
-          <div>
-            <label class="fz-label" for="ts">Tipo de sangre *</label>
-            <select id="ts" class="fz-input" formControlName="tipoSangre">
-              <option value="" disabled>Selecciona…</option>
-              @for (t of tiposSangre; track t) { <option [value]="t">{{ t }}</option> }
-            </select>
-            @if (form.controls.tipoSangre.touched && form.controls.tipoSangre.invalid) { <p class="fz-error">Obligatorio.</p> }
-          </div>
-          <div class="sm:col-span-2">
-            <label class="fz-label" for="cm">Condición médica</label>
-            <input id="cm" class="fz-input" formControlName="condicionMedica" maxlength="100" />
-          </div>
-        </div>
-      }
-      @if (error()) { <p class="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">{{ error() }}</p> }
-      <div class="flex justify-end gap-2 pt-2">
-        <button type="button" class="fz-btn-ghost" (click)="abierto.set(false)">Cancelar</button>
-        <button type="submit" class="fz-btn" [disabled]="enviando()">{{ enviando() ? 'Guardando…' : 'Registrar miembro' }}</button>
-      </div>
-    </form>
-  </app-modal>
+  <app-miembro-form (guardado)="alGuardar($event)" (cerrar)="abierto.set(false)" />
 }
