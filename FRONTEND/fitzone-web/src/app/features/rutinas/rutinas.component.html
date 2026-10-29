@@ -12,7 +12,11 @@
           <app-status-pill [status]="r.activa ? 'activa' : 'inactiva'" />
           <div class="flex gap-2">
             <button type="button" class="fz-btn-ghost" (click)="alternarDetalle(r.idRutina)">{{ abiertas().has(r.idRutina) ? 'Ocultar' : 'Ver ejercicios' }}</button>
-            @if (esEntrenador()) { <button type="button" class="fz-btn-ghost" (click)="alternar(r)">{{ r.activa ? 'Desactivar' : 'Activar' }}</button> }
+            @if (puedeModificar(r)) {
+              <button type="button" class="fz-btn-ghost" (click)="alternar(r)">{{ r.activa ? 'Desactivar' : 'Activar' }}</button>
+              <button type="button" class="fz-btn-ghost" (click)="editar(r)" [attr.aria-label]="'Editar ' + r.nombreRutina"><app-icon name="pencil" cls="size-4" /></button>
+              <button type="button" class="fz-btn-ghost" (click)="porEliminar.set(r)" [attr.aria-label]="'Eliminar ' + r.nombreRutina"><app-icon name="trash" cls="size-4" /></button>
+            }
           </div>
         </div>
         @if (abiertas().has(r.idRutina)) {
@@ -36,7 +40,7 @@
 </app-panel>
 
 @if (abierto()) {
-  <app-modal titulo="Nueva rutina" (cerrar)="abierto.set(false)">
+  <app-modal [titulo]="editando() ? 'Editar rutina' : 'Nueva rutina'" (cerrar)="abierto.set(false)">
     <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-4">
       <div>
         <label class="fz-label" for="mi">Miembro ({{ usuario()?.sede }}) *</label>
@@ -106,8 +110,13 @@
       @if (error()) { <p class="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">{{ error() }}</p> }
       <div class="flex justify-end gap-2 pt-2">
         <button type="button" class="fz-btn-ghost" (click)="abierto.set(false)">Cancelar</button>
-        <button type="submit" class="fz-btn" [disabled]="enviando()">{{ enviando() ? 'Guardando…' : 'Crear rutina' }}</button>
+        <button type="submit" class="fz-btn" [disabled]="enviando()">{{ enviando() ? 'Guardando…' : editando() ? 'Guardar cambios' : 'Crear rutina' }}</button>
       </div>
     </form>
   </app-modal>
+}
+
+@if (porEliminar(); as r) {
+  <app-confirmar titulo="Eliminar rutina" [mensaje]="'Se eliminará la rutina «' + r.nombreRutina + '» de ' + r.miembro + '. Si solo quieres pausarla, desactívala.'"
+    [enviando]="eliminando()" (confirmar)="eliminar()" (cancelar)="porEliminar.set(null)" />
 }

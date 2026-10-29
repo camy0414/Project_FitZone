@@ -1,8 +1,10 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../core/auth.service';
 import { DataService } from '../../core/data.service';
 import { Ejercicio, Miembro, Rutina, TipoEjercicio } from '../../core/models';
+import { ConfirmarComponent } from '../../shared/components/confirmar/confirmar.component';
+import { IconComponent } from '../../shared/components/icon/icon.component';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { PanelComponent } from '../../shared/components/panel/panel.component';
 import { StatusPillComponent } from '../../shared/components/status-pill/status-pill.component';
@@ -14,7 +16,8 @@ import { mensajeError } from '../../shared/utils/util';
 
 @Component({
   selector: 'app-rutinas',
-  imports: [ReactiveFormsModule, PanelComponent, VacioComponent, ModalComponent, StatusPillComponent, FechaPipe],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [ReactiveFormsModule, PanelComponent, VacioComponent, ModalComponent, StatusPillComponent, ConfirmarComponent, IconComponent, FechaPipe],
   templateUrl: './rutinas.component.html',
 })
 export class RutinasComponent implements OnInit {
@@ -36,6 +39,10 @@ export class RutinasComponent implements OnInit {
   });
 
   readonly abierto = signal(false);
+  /** Rutina en edición; null cuando el formulario crea una nueva. */
+  readonly editando = signal<Rutina | null>(null);
+  readonly porEliminar = signal<Rutina | null>(null);
+  readonly eliminando = signal(false);
   readonly enviando = signal(false);
   readonly error = signal('');
   readonly form = this.fb.nonNullable.group({
@@ -63,6 +70,11 @@ export class RutinasComponent implements OnInit {
     if (e.tipo === 'cardio') return `${e.duracionMin} min${e.distanciaKm ? ' · ' + e.distanciaKm + ' km' : ''}`;
     return `${e.series} × ${e.duracionSeg} s`;
   }
+  /** Solo el entrenador que creó la rutina la modifica (el documento guarda su idEmpleado). */
+  puedeModificar(r: Rutina): boolean {
+    const u = this.usuario();
+    return u?.rol === 'ENTRENADOR_SEDE' && r.idEmpleado === u.idEmpleado;
+  }
   alternar(r: Rutina) {
     this.data.cambiarEstadoRutina(r.idRutina, !r.activa).subscribe({
       next: (m) => { this.toast.ok(m); this.cargar(); },
@@ -70,17 +82,17 @@ export class RutinasComponent implements OnInit {
     });
   }
 
-  private nuevoEjercicio() {
+  private nuevoEjercicio(e?: Ejercicio) {
     return this.fb.nonNullable.group({
-      nombre: ['', Validators.required],
-      tipo: ['fuerza' as TipoEjercicio],
-      series: [null as number | null],
-      repeticiones: [null as number | null],
-      pesoKg: [null as number | null],
-      duracionMin: [null as number | null],
-      duracionSeg: [null as number | null],
-      distanciaKm: [null as number | null],
-      notas: [''],
+      nombre: [e?.nombre ?? '', Validators.required],
+      tipo: [e?.tipo ?? ('fuerza' as TipoEjercicio)],
+      series: [e?.series ?? (null as number | null)],
+      repeticiones: [e?.repeticiones ?? (null as number | null)],
+      pesoKg: [e?.pesoKg ?? (null as number | null)],
+      duracionMin: [e?.duracionMin ?? (null as number | null)],
+      duracionSeg: [e?.duracionSeg ?? (null as number | null)],
+      distanciaKm: [e?.distanciaKm ?? (null as number | null)],
+      notas: [e?.notas ?? ''],
     });
   }
   tipoDe(i: number): TipoEjercicio { return this.ejercicios.at(i).get('tipo')!.value; }
@@ -88,25 +100,44 @@ export class RutinasComponent implements OnInit {
   quitarEjercicio(i: number) { if (this.ejercicios.length > 1) this.ejercicios.removeAt(i); }
 
   nueva() {
+    this.editando.set(null);
+    this.form.controls.idMiembro.enable();
     this.form.reset({ idMiembro: 0, nombreRutina: '', objetivo: '', notasEntrenador: '' });
     this.ejercicios.clear(); this.ejercicios.push(this.nuevoEjercicio());
     this.error.set(''); this.abierto.set(true);
+  }
+  editar(r: Rutina) {
+    this.editando.set(r);
+    this.form.reset({ idMiembro: r.idMiembro, nombreRutina: r.nombreRutina, objetivo: r.objetivo, notasEntrenador: r.notasEntrenador ?? '' });
+    // La rutina pertenece a un miembro: no se reasigna, se crea otra.
+    this.form.controls.idMiembro.disable();
+    this.ejercicios.clear();
+    for (const e of r.ejercicios) this.ejercicios.push(this.nuevoEjercicio(e));
+    this.error.set(''); this.abierto.set(true);
+  }
+  eliminar() {
+    const r = this.porEliminar();
+    if (!r) return;
+    this.eliminando.set(true);
+    this.data.eliminarRutina(r.idRutina).subscribe({
+      next: (m) => { this.eliminando.set(false); this.porEliminar.set(null); this.toast.ok(m); this.cargar(); },
+      error: (e) => { this.eliminando.set(false); this.porEliminar.set(null); this.toast.error(mensajeError(e)); },
+    });
   }
   guardar() {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     const v = this.form.getRawValue();
     const num = (x: unknown) => (x === null || x === '' || x === undefined ? undefined : +(x as number));
-    const ejercicios: Ejercicio[] = v.ejercicios.map((e: any) => ({
+    const ejercicios: Ejercicio[] = v.ejercicios.map((e) => ({
       nombre: e.nombre.trim(), tipo: e.tipo,
       series: num(e.series), repeticiones: num(e.repeticiones), pesoKg: num(e.pesoKg),
       duracionMin: num(e.duracionMin), duracionSeg: num(e.duracionSeg), distanciaKm: num(e.distanciaKm),
       notas: e.notas?.trim() || undefined,
     }));
     this.enviando.set(true); this.error.set('');
-    this.data.crearRutina({
-      idMiembro: +v.idMiembro, nombreRutina: v.nombreRutina, objetivo: v.objetivo || undefined,
-      notasEntrenador: v.notasEntrenador || undefined, ejercicios,
-    }).subscribe({
+    const datos = { nombreRutina: v.nombreRutina, objetivo: v.objetivo || undefined, notasEntrenador: v.notasEntrenador || undefined, ejercicios };
+    const r = this.editando();
+    (r ? this.data.editarRutina(r.idRutina, datos) : this.data.crearRutina({ ...datos, idMiembro: +v.idMiembro })).subscribe({
       next: (m) => { this.enviando.set(false); this.abierto.set(false); this.toast.ok(m); this.cargar(); },
       error: (e) => { this.enviando.set(false); this.error.set(mensajeError(e)); },
     });
