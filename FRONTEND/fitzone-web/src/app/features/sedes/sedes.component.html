@@ -2,27 +2,29 @@
   <button acciones type="button" class="fz-btn" (click)="nueva()">Nueva sede</button>
   <div class="divide-y divide-black/5">
     @for (s of visibles(); track s.idSede) {
-      <app-fila [principal]="s.nombre" [secundario]="s.direccion" [meta]="s.telefono" estado="activo" />
+      <app-fila [principal]="s.nombre" [secundario]="s.direccion" [meta]="s.telefono">
+        <button type="button" class="fz-btn-ghost !px-2.5" (click)="editar(s)" [attr.aria-label]="'Editar ' + s.nombre"><app-icon name="pencil" cls="size-4" /></button>
+      </app-fila>
     } @empty { <app-vacio /> }
   </div>
 </app-panel>
 
 @if (abierto()) {
-  <app-modal titulo="Nueva sede" (cerrar)="abierto.set(false)">
+  <app-modal [titulo]="editando() ? 'Editar sede' : 'Nueva sede'" (cerrar)="abierto.set(false)">
     <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-4">
       <div>
         <label class="fz-label" for="nombre">Nombre</label>
-        <input id="nombre" class="fz-input" formControlName="nombre" maxlength="50" placeholder="FitZone Centro" />
+        <input id="nombre" class="fz-input" formControlName="nombre" [maxlength]="max.nombre" placeholder="FitZone Centro" />
         @if (form.controls.nombre.touched && form.controls.nombre.invalid) { <p class="fz-error">El nombre es obligatorio.</p> }
       </div>
       <div>
         <label class="fz-label" for="direccion">Dirección</label>
-        <input id="direccion" class="fz-input" formControlName="direccion" maxlength="100" />
+        <input id="direccion" class="fz-input" formControlName="direccion" [maxlength]="max.direccion" />
         @if (form.controls.direccion.touched && form.controls.direccion.invalid) { <p class="fz-error">La dirección es obligatoria.</p> }
       </div>
       <div>
         <label class="fz-label" for="telefono">Teléfono</label>
-        <input id="telefono" class="fz-input" formControlName="telefono" maxlength="20" />
+        <input id="telefono" class="fz-input" formControlName="telefono" [maxlength]="max.telefono" />
         @if (form.controls.telefono.touched && form.controls.telefono.invalid) { <p class="fz-error">El teléfono es obligatorio.</p> }
       </div>
       @if (error()) { <p class="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">{{ error() }}</p> }
