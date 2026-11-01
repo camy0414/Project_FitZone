@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../core/auth.service';
 import { DataService } from '../../core/data.service';
@@ -10,10 +10,11 @@ import { VacioComponent } from '../../shared/components/vacio/vacio.component';
 import { FechaPipe } from '../../shared/pipes/fecha.pipe';
 import { SearchService } from '../../shared/services/search.service';
 import { ToastService } from '../../shared/services/toast.service';
-import { hoyISO, mensajeError } from '../../shared/utils/util';
+import { hoyISO, mensajeError, porFechaHora } from '../../shared/utils/util';
 
 @Component({
   selector: 'app-sesiones',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, PanelComponent, FilaComponent, VacioComponent, ModalComponent, FechaPipe],
   templateUrl: './sesiones.component.html',
 })
@@ -54,7 +55,7 @@ export class SesionesComponent implements OnInit {
   }
   cargar() {
     this.data.sesiones().subscribe((l) => {
-      this.lista.set([...l].sort((a, b) => (a.fecha + a.horaInicio).localeCompare(b.fecha + b.horaInicio)));
+      this.lista.set(porFechaHora(l));
       this.cargando.set(false);
     });
   }

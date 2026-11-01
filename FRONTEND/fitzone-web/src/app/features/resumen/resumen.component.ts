@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Observable, forkJoin } from 'rxjs';
 import { AuthService } from '../../core/auth.service';
@@ -6,20 +6,15 @@ import { DataService } from '../../core/data.service';
 import { Equipo, Membresia, Miembro, Pago, Sede, Sesion } from '../../core/models';
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
 import { IconComponent } from '../../shared/components/icon/icon.component';
-import { StatusPillComponent } from '../../shared/components/status-pill/status-pill.component';
 import { CopPipe } from '../../shared/pipes/cop.pipe';
 import { FechaPipe } from '../../shared/pipes/fecha.pipe';
-
-const isoHoy = (offset = 0) => {
-  const f = new Date();
-  f.setDate(f.getDate() + offset);
-  return `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, '0')}-${String(f.getDate()).padStart(2, '0')}`;
-};
+import { isoDesplazada as isoHoy, porFechaHora } from '../../shared/utils/util';
 const DIAS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
 @Component({
   selector: 'app-resumen',
-  imports: [RouterLink, IconComponent, AvatarComponent, StatusPillComponent, CopPipe, FechaPipe],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterLink, IconComponent, AvatarComponent, CopPipe, FechaPipe],
   templateUrl: './resumen.component.html',
 })
 export class ResumenComponent implements OnInit {
@@ -34,33 +29,33 @@ export class ResumenComponent implements OnInit {
   readonly sesiones = signal<Sesion[]>([]);
   readonly equipos = signal<Equipo[]>([]);
 
-  // Qué ve cada rol (igual que los permisos de la base de datos)
   readonly rol = computed(() => this.usuario()?.rol ?? 'ENTRENADOR_SEDE');
   readonly esEntrenador = computed(() => this.rol() === 'ENTRENADOR_SEDE');
   readonly esAdmin = computed(() => this.rol() === 'ADMIN_SISTEMA');
   readonly verEquipos = computed(() => ['ADMIN_SISTEMA', 'GERENTE_SEDE'].includes(this.rol()));
   readonly primerNombre = computed(() => this.usuario()?.nombre.split(' ')[0] ?? '');
 
-  /** Número de tarjetas según el rol: entrenador 2, recepción 5, administrador y gerente 6. */
   readonly columnas = computed(() =>
     this.esEntrenador() ? 'xl:grid-cols-3' : this.verEquipos() ? 'xl:grid-cols-6' : 'xl:grid-cols-5',
   );
 
   readonly hoy = isoHoy();
   readonly activas = computed(
-    () => this.membresias().filter((m) => m.estado === 'activa' && m.fechaFin >= this.hoy).length,
+    () => this.membresias().filter((m) => m.estado === 'ACTIVA' && m.fechaFin >= this.hoy).length,
   );
   readonly ingresos30 = computed(() =>
     this.pagos().filter((p) => p.fechaPago >= isoHoy(-30)).reduce((s, p) => s + p.monto, 0),
   );
   readonly sesionesHoy = computed(() => this.sesiones().filter((s) => s.fecha === this.hoy).length);
   readonly proximas = computed(() =>
-    this.sesiones()
-      .filter((s) => s.fecha >= this.hoy)
-      .sort((a, b) => (a.fecha + a.horaInicio).localeCompare(b.fecha + b.horaInicio))
-      .slice(0, 4),
+    porFechaHora(this.sesiones().filter((s) => s.fecha >= this.hoy)).slice(0, 4),
   );
-  readonly alertas = computed(() => this.equipos().filter((e) => e.estado !== 'operativo').length);
+
+  readonly mantenidos30 = computed(() =>
+    this.equipos().filter((e) => e.ultimoMantenimiento !== null && e.ultimoMantenimiento >= isoHoy(-30)).length);
+ 
+  readonly equiposPorRevisar = computed(() =>
+    [...this.equipos()].sort((a, b) => (a.ultimoMantenimiento ?? '').localeCompare(b.ultimoMantenimiento ?? '')).slice(0, 4));
   readonly inscripcionesProx = computed(() =>
     this.sesiones().filter((s) => s.fecha >= this.hoy).reduce((a, s) => a + s.inscritos, 0),
   );
@@ -72,7 +67,7 @@ export class ResumenComponent implements OnInit {
   readonly pagosRecientes = computed(() =>
     [...this.pagos()].sort((a, b) => b.fechaPago.localeCompare(a.fechaPago)).slice(0, 5),
   );
-  /** Inscritos por día en los últimos 7 días (barras del gráfico). */
+
   readonly barras = computed(() => {
     const dias = Array.from({ length: 7 }, (_, i) => isoHoy(i - 6));
     const valores = dias.map((f) =>

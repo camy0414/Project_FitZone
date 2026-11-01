@@ -10,7 +10,7 @@
 @if (abierto()) {
   <app-modal titulo="Renovar / asignar membresía" (cerrar)="abierto.set(false)">
     <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-4">
-      <p class="text-xs text-zinc-400">Se crea la membresía y se registra el pago en una sola operación. Si el miembro tiene una membresía activa, la nueva empieza al día siguiente de que termine.</p>
+      <p class="text-xs text-zinc-400">Se crea una nueva membresía y se registra su pago en la misma operación. Un miembro solo tiene una membresía activa: si ya tiene una, pasa a vencida y la nueva empieza al día siguiente de su fecha fin.</p>
       <div>
         <label class="fz-label" for="mi">Miembro *</label>
         <select id="mi" class="fz-input" formControlName="idMiembro">
@@ -22,7 +22,7 @@
       <div class="grid gap-4 sm:grid-cols-2">
         <div>
           <label class="fz-label" for="pl">Plan *</label>
-          <select id="pl" class="fz-input" formControlName="idTipoPlan" (change)="alElegirPlan()">
+          <select id="pl" class="fz-input" formControlName="idTipoPlan">
             <option [ngValue]="0" disabled>Selecciona…</option>
             @for (p of planes(); track p.id) { <option [ngValue]="p.id">{{ p.nombre }}</option> }
           </select>

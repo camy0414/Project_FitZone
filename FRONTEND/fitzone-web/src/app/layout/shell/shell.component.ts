@@ -1,12 +1,12 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { AuthService } from '../../core/auth.service';
-import { MENU } from '../../core/menu';
-import { ROL_LABEL } from '../../core/models';
-import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
-import { IconComponent } from '../../shared/components/icon/icon.component';
-import { ToastsComponent } from '../../shared/components/toasts/toasts.component';
-import { SearchService } from '../../shared/services/search.service';
+import { AuthService } from '../core/auth.service';
+import { MENU } from '../core/menu';
+import { ROL_LABEL } from '../core/models';
+import { AvatarComponent } from '../shared/ui';
+import { IconComponent } from '../shared/icon.component';
+import { SearchService } from '../shared/search.service';
+import { ToastsComponent } from '../shared/toast';
 
 @Component({
   selector: 'app-shell',

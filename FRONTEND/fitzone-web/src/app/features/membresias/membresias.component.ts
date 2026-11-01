@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../core/auth.service';
 import { DataService } from '../../core/data.service';
@@ -12,10 +12,9 @@ import { SearchService } from '../../shared/services/search.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { mensajeError } from '../../shared/utils/util';
 
-const SUGERIDO: Record<string, number> = { mensual: 90000, trimestral: 240000, anual: 850000 };
-
 @Component({
   selector: 'app-membresias',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, PanelComponent, FilaComponent, VacioComponent, ModalComponent, FechaPipe],
   templateUrl: './membresias.component.html',
 })
@@ -58,12 +57,6 @@ export class MembresiasComponent implements OnInit {
   }
   cargar() { this.data.membresias().subscribe((l) => { this.lista.set(l); this.cargando.set(false); }); }
   nueva() { this.form.reset({ idMiembro: 0, idTipoPlan: 0, idMetodoPago: 0, monto: 0 }); this.error.set(''); this.abierto.set(true); }
-  /** Al elegir el plan se sugiere el monto (editable). */
-  alElegirPlan() {
-    const plan = this.planes().find((p) => p.id === +this.form.controls.idTipoPlan.value);
-    const s = plan ? SUGERIDO[plan.nombre.toLowerCase()] : undefined;
-    if (s) this.form.controls.monto.setValue(s);
-  }
   guardar() {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.enviando.set(true); this.error.set('');

@@ -25,7 +25,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left text-sm">
         <thead class="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
-          <tr><th class="px-6 py-3">Fecha</th><th class="px-3 py-3">Peso</th><th class="px-3 py-3">Grasa</th><th class="px-3 py-3">Medidas</th><th class="px-6 py-3">Notas</th></tr>
+          <tr><th class="px-6 py-3">Fecha</th><th class="px-3 py-3">Peso</th><th class="px-3 py-3">Grasa</th><th class="px-3 py-3">Medidas</th><th class="px-6 py-3">Notas</th><th class="px-6 py-3"><span class="sr-only">Acciones</span></th></tr>
         </thead>
         <tbody class="divide-y divide-black/5">
           @for (p of serie(); track p.idProgreso) {
@@ -35,6 +35,14 @@
               <td class="px-3 py-3">{{ p.grasaPct ? p.grasaPct + ' %' : '—' }}</td>
               <td class="px-3 py-3 text-zinc-500">{{ medidasTexto(p) }}</td>
               <td class="px-6 py-3 text-xs text-zinc-400">{{ p.notas || '' }}</td>
+              <td class="px-6 py-3">
+                @if (puedeModificar(p)) {
+                  <div class="flex justify-end gap-2">
+                    <button type="button" class="fz-btn-ghost !px-2.5" (click)="editar(p)" [attr.aria-label]="'Editar medición del ' + p.fecha"><app-icon name="pencil" cls="size-4" /></button>
+                    <button type="button" class="fz-btn-ghost !px-2.5" (click)="porEliminar.set(p)" [attr.aria-label]="'Eliminar medición del ' + p.fecha"><app-icon name="trash" cls="size-4" /></button>
+                  </div>
+                }
+              </td>
             </tr>
           }
         </tbody>
@@ -46,7 +54,7 @@
 </app-panel>
 
 @if (abierto()) {
-  <app-modal titulo="Registrar medición" (cerrar)="abierto.set(false)">
+  <app-modal [titulo]="editando() ? 'Editar medición' : 'Registrar medición'" (cerrar)="abierto.set(false)">
     <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-4">
       <div>
         <label class="fz-label" for="mi">Miembro ({{ usuario()?.sede }}) *</label>
@@ -88,8 +96,13 @@
       @if (error()) { <p class="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">{{ error() }}</p> }
       <div class="flex justify-end gap-2 pt-2">
         <button type="button" class="fz-btn-ghost" (click)="abierto.set(false)">Cancelar</button>
-        <button type="submit" class="fz-btn" [disabled]="enviando()">{{ enviando() ? 'Guardando…' : 'Registrar medición' }}</button>
+        <button type="submit" class="fz-btn" [disabled]="enviando()">{{ enviando() ? 'Guardando…' : editando() ? 'Guardar cambios' : 'Registrar medición' }}</button>
       </div>
     </form>
   </app-modal>
+}
+
+@if (porEliminar(); as p) {
+  <app-confirmar titulo="Eliminar medición" [mensaje]="'Se eliminará la medición del ' + p.fecha + ' de ' + p.miembro + '.'"
+    [enviando]="eliminando()" (confirmar)="eliminar()" (cancelar)="porEliminar.set(null)" />
 }
