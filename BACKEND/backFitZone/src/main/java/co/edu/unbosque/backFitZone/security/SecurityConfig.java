@@ -1,13 +1,16 @@
 package co.edu.unbosque.backFitZone.security;
 
+import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -22,6 +25,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
 	@Autowired
@@ -29,6 +33,9 @@ public class SecurityConfig {
 
 	@Autowired
 	private UserDetailsService userDetailsService;
+	
+	@Value("${fitzone.cors.origenes}")
+	private String origenes;
 
 	public SecurityConfig() {
 	}
@@ -43,9 +50,7 @@ public class SecurityConfig {
 				.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 				.requestMatchers("/auth/me").authenticated()
 				// Ajustar al crear controller de trabajador
-				.requestMatchers("/cliente/createjson").hasRole("SUPERVISOR")
-				.requestMatchers("/supervisor/**").hasRole("SUPERVISOR")
-				.requestMatchers("/compra/**", "/restriccion/**").hasAnyRole("PAREJA", "SUPERVISOR", "CLIENTE")
+				/*.requestMatchers("/cliente/createjson").hasRole("ROL_ADMIN_SISTEMA")*/
 				.anyRequest().authenticated())
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authenticationProvider(authenticationProvider())
@@ -57,29 +62,31 @@ public class SecurityConfig {
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(List.of("*")); //http://localhost:4200
+		configuration.setAllowedOriginPatterns(Arrays.stream(origenes.split(",")).map(String::trim).toList());
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 		configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
 		configuration.setExposedHeaders(List.of("Authorization"));
-		configuration.setAllowCredentials(true);
+		configuration.setAllowCredentials(false);
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
 		return source;
 	}
 
+	
 	@Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
-        return authProvider;
-    }
+	public AuthenticationProvider authenticationProvider() {
+		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
+		authProvider.setPasswordEncoder(passwordEncoder());
+		return authProvider;
+	}
 
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
 		return config.getAuthenticationManager();
 	}
 
+	
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
