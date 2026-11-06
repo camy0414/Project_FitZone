@@ -2,9 +2,9 @@ package co.edu.unbosque.backFitZone.repository;
 
 import java.util.Optional;
 
-import co.edu.unbosque.backFitZone.dto.CredencialDTO;
+import co.edu.unbosque.backFitZone.model.Empleado;
 
 public interface AuthRepository {
 
-	Optional<CredencialDTO> findByCorreo(String correo);
+	public Optional<Empleado> findByCorreo(String correo);
 }

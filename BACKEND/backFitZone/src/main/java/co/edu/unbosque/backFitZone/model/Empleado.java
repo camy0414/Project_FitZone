@@ -1,7 +1,14 @@
 package co.edu.unbosque.backFitZone.model;
 
-public class Empleado {
+import java.util.Collection;
+import java.util.List;
+import org.jspecify.annotations.Nullable;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+public class Empleado implements UserDetails {
 
+	private static final long serialVersionUID = 1L;
 	private Long idEmpleado;
 	private String primerNombre;
 	private String segundoNombre;
@@ -153,5 +160,32 @@ public class Empleado {
 
 	public void setSede(String sede) {
 		this.sede = sede;
+	}
+
+
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		if (rol == null || rol.isBlank()) {
+			return List.of();
+		}
+		return List.of(new SimpleGrantedAuthority("ROLE_" + rol.trim().toUpperCase()));
+	}
+
+
+	@Override
+	public @Nullable String getPassword() {
+		// TODO Auto-generated method stub
+		return contrasena;
+	}
+
+
+	@Override
+	public String getUsername() {
+		// TODO Auto-generated method stub
+		return correo;
+	}
+	@Override
+	public boolean isEnabled() {
+		return activo == null || activo;
 	}
 }
