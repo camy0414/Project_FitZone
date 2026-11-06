@@ -47,7 +47,7 @@ public class SecurityConfig {
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/auth/login").permitAll()
-				.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+				.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/error").permitAll()
 				.requestMatchers("/auth/me").authenticated()
 				// Ajustar al crear controller de trabajador
 				/*.requestMatchers("/cliente/createjson").hasRole("ROL_ADMIN_SISTEMA")*/
