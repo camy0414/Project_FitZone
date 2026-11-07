@@ -1,0 +1,41 @@
+<div class="grid gap-3 px-6 py-5 sm:grid-cols-3">
+  <app-indicador etiqueta="Ocupación promedio" [valor]="ocupacion() + ' %'" detalle="Inscritos frente al cupo" />
+  <app-indicador etiqueta="Asistencia" [valor]="asistencia() === null ? '—' : asistencia() + ' %'" detalle="En sesiones ya realizadas" />
+  <app-indicador etiqueta="Sesiones llenas" [valor]="llenas()" [detalle]="'de ' + filas().length + ' sesiones'" />
+</div>
+
+@if (filas().length) {
+  <div class="overflow-x-auto">
+    <table class="w-full min-w-[680px] text-left text-sm">
+      <thead class="border-y border-black/5 bg-zinc-50 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+        <tr>
+          <th scope="col" class="px-6 py-3">Sesión</th>
+          <th scope="col" class="px-6 py-3">Clase</th>
+          <th scope="col" class="w-48 px-6 py-3">Ocupación</th>
+          <th scope="col" class="px-6 py-3 text-right">Asistencia</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-black/5">
+        @for (f of filas(); track f.numeroSesion) {
+          <tr>
+            <td class="px-6 py-3">
+              <p class="font-bold">{{ f.fecha | fecha }} · {{ f.horaInicio }}</p>
+              <p class="text-xs text-zinc-400">#{{ f.numeroSesion }}</p>
+            </td>
+            <td class="px-6 py-3">
+              <p class="font-bold">{{ f.clase }}</p>
+              <p class="text-xs text-zinc-400">{{ f.sede }} · {{ f.entrenador }}</p>
+            </td>
+            <td class="px-6 py-3">
+              <p class="mb-1 text-xs font-bold tabular-nums">{{ f.inscritos }}/{{ f.cupoMaximo }}</p>
+              <app-barra [valor]="f.inscritos" [maximo]="f.cupoMaximo" [color]="f.inscritos >= f.cupoMaximo ? 'bg-amber-500' : 'bg-orange-500'" />
+            </td>
+            <td class="px-6 py-3 text-right font-bold tabular-nums" [class.text-zinc-400]="f.fecha > hoy">{{ pctAsistencia(f) }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+} @else {
+  <app-vacio mensaje="No hay sesiones en el rango elegido." detalle="Amplía las fechas o cambia la sede." />
+}
