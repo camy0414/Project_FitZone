@@ -1,0 +1,18 @@
+<main class="min-h-screen bg-[#f5f4f1] text-zinc-950">
+  <!-- Fondo oscuro detrás del menú en celular -->
+  <div
+    class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition lg:hidden"
+    [class]="menuAbierto() ? 'visible opacity-100' : 'invisible opacity-0'"
+    (click)="menuAbierto.set(false)"
+  ></div>
+
+  <app-sidebar [abierto]="menuAbierto()" (cerrar)="menuAbierto.set(false)" />
+
+  <div class="lg:pl-72">
+    <app-navbar (abrirMenu)="menuAbierto.set(true)" />
+    <div class="mx-auto max-w-[1600px] p-5 sm:p-8">
+      <router-outlet />
+    </div>
+  </div>
+  <app-toasts />
+</main>
