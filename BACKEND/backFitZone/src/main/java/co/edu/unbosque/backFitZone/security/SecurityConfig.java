@@ -47,6 +47,10 @@ public class SecurityConfig {
 						.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/error").permitAll()
 						.requestMatchers("/auth/me").authenticated()
 						// Ajustar al crear controllers
+						// Empleados
+						.requestMatchers("/empleado/getall", "/empleado/get/**").hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE")
+						.requestMatchers("/empleado/create", "/empleado/update/**", "/empleado/updateestado/**")
+						.hasRole("ADMIN_SISTEMA")
 						// Sedes
 						.requestMatchers("/sede/getall", "/sede/get/**")
 						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE", "ENTRENADOR_SEDE")
@@ -64,7 +68,12 @@ public class SecurityConfig {
 						.requestMatchers("/membresia/renovar").hasAnyRole("ADMIN_SISTEMA", "RECEPCIONISTA_SEDE")
 						// Pagos
 						.requestMatchers("/pago/getall")
-						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE").anyRequest().authenticated())
+						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE")
+						// Clases
+						.requestMatchers("/clase/getall", "/clase/get/**")
+						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE", "ENTRENADOR_SEDE")
+						.requestMatchers("/clase/create", "/clase/update/**").hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE")
+						.anyRequest().authenticated())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authenticationProvider(authenticationProvider())
 				.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

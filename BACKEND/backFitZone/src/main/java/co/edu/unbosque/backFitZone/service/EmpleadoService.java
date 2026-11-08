@@ -37,8 +37,7 @@ public class EmpleadoService implements EmpleadoRepository {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
-	// Administrador puede ver todos los empleados, gerente solo puede los de su
-	// propia sede
+	// Administrador puede ver todos los empleados, el gerente solo puede los de su  propia sede
 	@Transactional(readOnly = true)
 	public List<EmpleadoDTO> getAll() {
 		rolBd.activarRol();
@@ -75,7 +74,7 @@ public class EmpleadoService implements EmpleadoRepository {
 			throw new NegocioException("Datos obligatorios no incluidos");
 		}
 		if (dto.getClave() == null || dto.getClave().length() < 8 || dto.getClave().length() > 72) {
-			throw new NegocioException("La contraseña tiene que tener mas de 8 caracteres y nemos de 72");
+			throw new NegocioException("La contraseña debe tener entre 8 y 72 caracteres");
 		}
 
 		Empleado empleado = modelMapper.map(dto, Empleado.class);
@@ -153,6 +152,9 @@ public class EmpleadoService implements EmpleadoRepository {
 	@Transactional
 	public String updateEstado(Long idEmpleado, EmpleadoDTO dto) {
 		rolBd.activarRol();
+		if (dto == null || dto.getActivo() == null) {
+			throw new NegocioException("Se debe indicar si el empleado queda activo o inactivo");
+		}
 
 		if (!dto.getActivo() && UsuarioActual.obtenerEmpleadoAutenticado().getIdEmpleado().equals(idEmpleado)) {
 			throw new ConflictoException("No puede desactivar su propia cuenta");
@@ -200,7 +202,7 @@ public class EmpleadoService implements EmpleadoRepository {
 	public Optional<Empleado> findById(Long idEmpleado) {
 		return jdbc
 				.query("""
-						SELEC
+						SELECT
 							e.id_empleado, e.primer_nombre, e.segundo_nombre, e.primer_apellido, e.segundo_apellido,
 							fn_nombre_completo(e.primer_nombre, e.segundo_nombre, e.primer_apellido, e.segundo_apellido) AS nombre_completo,
 							e.telefono, e.correo, e.activo, e.id_rol_empleado, r.nombre AS rol, e.id_sede, s.nombre AS sede
@@ -217,7 +219,7 @@ public class EmpleadoService implements EmpleadoRepository {
 	public Long save(Empleado empleado) {
 		return jdbc.queryForObject("""
 				CALL sp_crear_empleado(?::varchar, ?::varchar, ?::varchar, ?::varchar, ?::varchar, ?::varchar,
-				                       ?::varchar, ?::numeric, ?::numeric, NULL)""", Long.class,
+					?::varchar, ?::numeric, ?::numeric, NULL)""", Long.class,
 				empleado.getPrimerNombre(), empleado.getSegundoNombre(), empleado.getPrimerApellido(),
 				empleado.getSegundoApellido(), empleado.getTelefono(), empleado.getCorreo(), empleado.getContrasena(),
 				empleado.getIdRolEmpleado(), empleado.getIdSede());
@@ -226,10 +228,9 @@ public class EmpleadoService implements EmpleadoRepository {
 	@Override
 	public int update(Empleado empleado) {
 		return jdbc.update("""
-				UPDATE empleado
-				   SET primer_nombre = ?, segundo_nombre = ?, primer_apellido = ?, segundo_apellido = ?,
-				       telefono = ?, correo = lower(?), id_rol_empleado = ?, id_sede = ?
-				 WHERE id_empleado = ?""", empleado.getPrimerNombre(), empleado.getSegundoNombre(),
+				UPDATE empleado SET primer_nombre = ?, segundo_nombre = ?, primer_apellido = ?, segundo_apellido = ?,
+					telefono = ?, correo = lower(?), id_rol_empleado = ?, id_sede = ?
+				WHERE id_empleado = ?""", empleado.getPrimerNombre(), empleado.getSegundoNombre(),
 				empleado.getPrimerApellido(), empleado.getSegundoApellido(), empleado.getTelefono(),
 				empleado.getCorreo(), empleado.getIdRolEmpleado(), empleado.getIdSede(), empleado.getIdEmpleado());
 	}
