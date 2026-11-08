@@ -47,6 +47,10 @@ public class SecurityConfig {
 						.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/error").permitAll()
 						.requestMatchers("/auth/me").authenticated()
 						// Ajustar al crear controllers
+						// Sedes
+						.requestMatchers("/sede/getall", "/sede/get/**")
+						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE", "ENTRENADOR_SEDE")
+						.requestMatchers("/sede/create", "/sede/update/**").hasRole("ADMIN_SISTEMA")
 						// Miembros
 						.requestMatchers("/miembro/getall")
 						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE", "ENTRENADOR_SEDE")
