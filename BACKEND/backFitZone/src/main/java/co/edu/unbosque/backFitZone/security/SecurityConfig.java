@@ -33,7 +33,7 @@ public class SecurityConfig {
 
 	@Autowired
 	private UserDetailsService userDetailsService;
-	
+
 	@Value("${fitzone.cors.origenes}")
 	private String origenes;
 
@@ -42,19 +42,28 @@ public class SecurityConfig {
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http
-			.csrf(csrf -> csrf.disable())
-			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/auth/login").permitAll()
-				.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/error").permitAll()
-				.requestMatchers("/auth/me").authenticated()
-				// Ajustar al crear controller de trabajador
-				/*.requestMatchers("/cliente/createjson").hasRole("ROL_ADMIN_SISTEMA")*/
-				.anyRequest().authenticated())
-			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-			.authenticationProvider(authenticationProvider())
-			.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+		http.csrf(csrf -> csrf.disable()).cors(cors -> cors.configurationSource(corsConfigurationSource()))
+				.authorizeHttpRequests(auth -> auth.requestMatchers("/auth/login").permitAll()
+						.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/error").permitAll()
+						.requestMatchers("/auth/me").authenticated()
+						// Ajustar al crear controllers
+						// Miembros
+						.requestMatchers("/miembro/getall")
+						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE", "ENTRENADOR_SEDE")
+						.requestMatchers("/miembro/getmiembroscadena", "/miembro/get/**")
+						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE")
+						.requestMatchers("/miembro/create", "/miembro/update/**")
+						.hasAnyRole("ADMIN_SISTEMA", "RECEPCIONISTA_SEDE")
+						// Membresias
+						.requestMatchers("/membresia/getall")
+						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE")
+						.requestMatchers("/membresia/renovar").hasAnyRole("ADMIN_SISTEMA", "RECEPCIONISTA_SEDE")
+						// Pagos
+						.requestMatchers("/pago/getall")
+						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE").anyRequest().authenticated())
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.authenticationProvider(authenticationProvider())
+				.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}
@@ -73,7 +82,6 @@ public class SecurityConfig {
 		return source;
 	}
 
-	
 	@Bean
 	public AuthenticationProvider authenticationProvider() {
 		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
@@ -86,7 +94,6 @@ public class SecurityConfig {
 		return config.getAuthenticationManager();
 	}
 
-	
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();

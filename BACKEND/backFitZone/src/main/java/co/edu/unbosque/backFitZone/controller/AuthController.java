@@ -62,7 +62,7 @@ public class AuthController {
 				.findFirst()
 				.map(a -> a.getAuthority().replace("ROLE_", ""))
 				.orElse(null);
-		return ResponseEntity.ok(new UsuarioActual(empleado.getIdEmpleado(), empleado.getNombreCompleto(), rol));
+		return ResponseEntity.ok(new UsuarioActual(empleado.getIdEmpleado(), empleado.getNombreCompleto(),empleado.getCorreo(), rol, empleado.getIdSede(),empleado.getSede()));
 	}
 	
 	
@@ -87,27 +87,48 @@ public class AuthController {
 	}
 	
 	private static class UsuarioActual {
-		private final Long idPersona;
+		private final Long idEmpleado;
 		private final String nombreCompleto;
+		private final String correo;
 		private final String rol;
-
-		public UsuarioActual(Long idPersona, String nombreCompleto, String rol) {
-			this.idPersona = idPersona;
+		private final Long idSede;
+		private final String sede;
+		
+		public UsuarioActual(Long idEmpleado, String nombreCompleto, String correo, String rol, Long idSede,
+				String sede) {
+			super();
+			this.idEmpleado = idEmpleado;
 			this.nombreCompleto = nombreCompleto;
+			this.correo = correo;
 			this.rol = rol;
+			this.idSede = idSede;
+			this.sede = sede;
 		}
 
-		public Long getIdPersona() {
-			return idPersona;
+		public Long getIdEmpleado() {
+			return idEmpleado;
 		}
 
 		public String getNombreCompleto() {
 			return nombreCompleto;
 		}
 
+		public String getCorreo() {
+			return correo;
+		}
+
 		public String getRol() {
 			return rol;
 		}
+
+		public Long getIdSede() {
+			return idSede;
+		}
+
+		public String getSede() {
+			return sede;
+		}
+		
 	}
 
 }
