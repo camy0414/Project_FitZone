@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -49,8 +50,14 @@ public class SecurityConfig {
 				.requestMatchers("/auth/login").permitAll()
 				.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/error").permitAll()
 				.requestMatchers("/auth/me").authenticated()
-				// Ajustar al crear controller de trabajador
-				/*.requestMatchers("/cliente/createjson").hasRole("ROL_ADMIN_SISTEMA")*/
+				// Ajustar al crear controllers
+				// Miembros
+				.requestMatchers("/miembro/getall")
+					.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE", "ENTRENADOR_SEDE")
+				.requestMatchers("/miembro/getmiembroscadena", "/miembro/get/**")
+					.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE")
+				.requestMatchers("/miembro/create", "/miembro/update/**")
+					.hasAnyRole("ADMIN_SISTEMA", "RECEPCIONISTA_SEDE")
 				.anyRequest().authenticated())
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authenticationProvider(authenticationProvider())

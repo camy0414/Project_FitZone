@@ -38,9 +38,7 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(DataAccessException.class)
 	public ResponseEntity<String> baseDeDatos(DataAccessException e) {
-		SQLException sql = (SQLException) e.getMostSpecificCause();
-		
-		if (sql.getSQLState() != null) {
+		if (e.getMostSpecificCause() instanceof SQLException sql && sql.getSQLState() != null) {
 			String mensaje = sql.getMessage().split("\n")[0];
 			int separador = mensaje.indexOf(": ");
 			if (separador >= 0) {

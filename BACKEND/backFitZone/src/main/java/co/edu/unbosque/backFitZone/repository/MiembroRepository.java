@@ -16,8 +16,6 @@ public interface MiembroRepository {
 
 	List<MiembroDTO> findByIdSede(Long idSede);
 	
-	List<MiembroDTO> findBasicoBySede(Long idSede);
-	
 	Optional<MiembroDTO> findVistaById(Long idMiembro);
 
 	// nombre y sede de un miembro. 
@@ -33,12 +31,9 @@ public interface MiembroRepository {
 	//Usara sp_registrar_miembro
 	Long save(Miembro miembro, InfoMedicaDTO infoMedica);
 
-	
 	int update(Miembro miembro);
 
 	//crear y actualizar infoMedica de un miembro
 	void saveInfoMedica(Long idMiembro, InfoMedicaDTO infoMedica);
 	
-	
 }
-

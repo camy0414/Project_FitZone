@@ -143,7 +143,7 @@ public class MiembroService implements MiembroRepository {
 				|| dto.getPrimerApellido() == null || dto.getPrimerApellido().isBlank()
 				|| dto.getTelefono() == null || dto.getTelefono().isBlank()
 				|| dto.getCorreo() == null || dto.getCorreo().isBlank()) {
-			throw new NegocioException("Datos obligatorios no incluidos (primer nombre, primer apellido, teléfono, correo y sede)");
+			throw new NegocioException("Datos obligatorios no incluidos (primer nombre, primer apellido, teléfono y correo)");
 		}
 		InfoMedicaDTO info = dto.getInfoMedica();
 		if (info != null && (info.getContactoEmergencia() == null || info.getContactoEmergencia().isBlank()
@@ -200,10 +200,11 @@ public class MiembroService implements MiembroRepository {
 	@Override
 	public Optional<Miembro> findById(Long idMiembro) {
 		return jdbc.query("""
-				SELECT id_miembro, telefono, correo, primer_nombre, segundo_nombre, primer_apellido,
-				       segundo_apellido, id_sede, fecha_registro
-				  FROM miembro
-				 WHERE id_miembro = ?""",
+				SELECT 
+					id_miembro, telefono, correo, primer_nombre, segundo_nombre, primer_apellido,
+					segundo_apellido, id_sede, fecha_registro
+				FROM miembro
+				WHERE id_miembro = ?""",
 				new BeanPropertyRowMapper<>(Miembro.class), idMiembro).stream().findFirst();
 	}
 
@@ -219,28 +220,34 @@ public class MiembroService implements MiembroRepository {
 	@Override
 	public List<MiembroDTO> findAll() {
 		return jdbc.query("""
-				SELECT id_miembro, nombre_completo, correo, telefono, id_sede, sede, fecha_registro, plan_actual
-				  FROM v_miembro
-				 ORDER BY nombre_completo""",
+				SELECT 
+					id_miembro, nombre_completo, correo, 
+					telefono, id_sede, sede, fecha_registro, plan_actual
+				FROM v_miembro
+				ORDER BY nombre_completo""",
 				new BeanPropertyRowMapper<>(MiembroDTO.class));
 	}
 
 	@Override
 	public List<MiembroDTO> findByIdSede(Long idSede) {
 		return jdbc.query("""
-				SELECT id_miembro, nombre_completo, correo, telefono, id_sede, sede, fecha_registro, plan_actual
-				  FROM v_miembro
-				 WHERE id_sede = ?
-				 ORDER BY nombre_completo""",
+				SELECT 
+				id_miembro, nombre_completo, correo, 
+				telefono, id_sede, sede, fecha_registro, plan_actual
+				FROM v_miembro
+				WHERE id_sede = ?
+				ORDER BY nombre_completo""",
 				new BeanPropertyRowMapper<>(MiembroDTO.class), idSede);
 	}
 
 	@Override
 	public Optional<MiembroDTO> findVistaById(Long idMiembro) {
 		return jdbc.query("""
-				SELECT id_miembro, nombre_completo, correo, telefono, id_sede, sede, fecha_registro, plan_actual
-				  FROM v_miembro
-				 WHERE id_miembro = ?""",
+				SELECT 
+					id_miembro, nombre_completo, correo, telefono, 
+					id_sede, sede, fecha_registro, plan_actual
+				FROM v_miembro
+				WHERE id_miembro = ?""",
 				new BeanPropertyRowMapper<>(MiembroDTO.class), idMiembro).stream().findFirst();
 	}
 
@@ -305,10 +312,5 @@ public class MiembroService implements MiembroRepository {
 				       tipo_sangre         = EXCLUDED.tipo_sangre,
 				       condicion_medica    = EXCLUDED.condicion_medica""",
 				idMiembro, info.getContactoEmergencia(), info.getTipoSangre(), info.getCondicionMedica());
-	}
-
-	@Override
-	public List<MiembroDTO> findBasicoBySede(Long idSede) {
-		return null;
 	}
 }
