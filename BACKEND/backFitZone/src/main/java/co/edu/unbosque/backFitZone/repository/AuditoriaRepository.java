@@ -2,9 +2,9 @@ package co.edu.unbosque.backFitZone.repository;
 
 import java.util.List;
 
-import co.edu.unbosque.backFitZone.model.Auditoria;
+import co.edu.unbosque.backFitZone.dto.AuditoriaDTO;
 
 public interface AuditoriaRepository {
 
-	List<Auditoria> findAll();
+	List<AuditoriaDTO> findAll();
 }

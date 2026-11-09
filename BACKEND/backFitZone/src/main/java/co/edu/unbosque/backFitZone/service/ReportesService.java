@@ -47,7 +47,7 @@ public class ReportesService implements ReporteRepository {
 			dias = 7;
 		}
 		if (dias < 0 || dias > 365) {
-			throw new NegocioException("SEleccione el numero de dias que desea consultar");
+			throw new NegocioException("SEleccione el numero de dias que desea consultar(Los días deben estar entre 0 y 365)");
 		}
 		if (!UsuarioActual.esAdmin()) {
 			idSede = UsuarioActual.sedeFiltro();
