@@ -1,6 +1,5 @@
 package co.edu.unbosque.backFitZone.model;
 
-
 public class TipoPlan {
 
 	private Long idTipoPlan;
