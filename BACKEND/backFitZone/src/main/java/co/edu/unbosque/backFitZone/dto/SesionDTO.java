@@ -1,6 +1,7 @@
 package co.edu.unbosque.backFitZone.dto;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 public class SesionDTO {
 
@@ -12,8 +13,8 @@ public class SesionDTO {
 	private Long idEmpleado;
 	private String entrenador;
 	private LocalDate fecha;
-	private String horaInicio;
-	private String horaFin;
+	private LocalTime horaInicio;
+	private LocalTime horaFin;
 	private Integer cupoMaximo;
 	private Integer inscritos;
 
@@ -21,7 +22,7 @@ public class SesionDTO {
 		
 	}
 
-	public SesionDTO(Long numeroSesion, Long idClase, String clase, Long idSede, String sede, Long idEmpleado, String entrenador, LocalDate fecha, String horaInicio, String horaFin, Integer cupoMaximo, Integer inscritos) {
+	public SesionDTO(Long numeroSesion, Long idClase, String clase, Long idSede, String sede, Long idEmpleado, String entrenador, LocalDate fecha, LocalTime horaInicio, LocalTime horaFin, Integer cupoMaximo, Integer inscritos) {
 		super();
 		this.numeroSesion = numeroSesion;
 		this.idClase = idClase;
@@ -101,19 +102,19 @@ public class SesionDTO {
 		this.fecha = fecha;
 	}
 
-	public String getHoraInicio() {
+	public LocalTime getHoraInicio() {
 		return horaInicio;
 	}
 
-	public void setHoraInicio(String horaInicio) {
+	public void setHoraInicio(LocalTime horaInicio) {
 		this.horaInicio = horaInicio;
 	}
 
-	public String getHoraFin() {
+	public LocalTime getHoraFin() {
 		return horaFin;
 	}
 
-	public void setHoraFin(String horaFin) {
+	public void setHoraFin(LocalTime horaFin) {
 		this.horaFin = horaFin;
 	}
 
