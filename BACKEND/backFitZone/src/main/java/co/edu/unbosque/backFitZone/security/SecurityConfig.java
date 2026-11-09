@@ -73,6 +73,15 @@ public class SecurityConfig {
 						.requestMatchers("/clase/getall", "/clase/get/**")
 						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE", "ENTRENADOR_SEDE")
 						.requestMatchers("/clase/create", "/clase/update/**").hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE")
+						// Sesiones
+						.requestMatchers("/sesion/getall", "/sesion/get/**")
+						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE", "ENTRENADOR_SEDE")
+						.requestMatchers("/sesion/create").hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE")
+						// Inscripciones
+						.requestMatchers("/inscripcion/get/**")
+						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE", "ENTRENADOR_SEDE")
+						.requestMatchers("/inscripcion/create/**").hasAnyRole("ADMIN_SISTEMA", "RECEPCIONISTA_SEDE")
+						.requestMatchers("/inscripcion/updateasistencia/**").hasAnyRole("ADMIN_SISTEMA", "ENTRENADOR_SEDE")
 						.anyRequest().authenticated())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authenticationProvider(authenticationProvider())
