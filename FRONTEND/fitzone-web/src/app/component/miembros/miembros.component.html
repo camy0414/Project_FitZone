@@ -1,0 +1,14 @@
+<app-panel titulo="Miembros" descripcion="Personas inscritas en el gimnasio y el plan de su membresía vigente." [cargando]="cargando()">
+  @if (puedeCrear()) { <button acciones type="button" class="fz-btn" (click)="abierto.set(true)">Registrar miembro</button> }
+  <div class="divide-y divide-black/5">
+    @for (m of visibles(); track m.idMiembro) {
+      <app-fila [principal]="m.nombreCompleto" [secundario]="m.correo + ' · registrado ' + (m.fechaRegistro | fecha: true)" [meta]="m.sede + (m.planActual ? ' · ' + m.planActual : '')" [estado]="m.planActual ? 'activa' : 'sin membresía'">
+        <a class="fz-btn-ghost" [routerLink]="['/miembros', m.idMiembro]" [attr.aria-label]="'Ver detalle de ' + m.nombreCompleto">Ver</a>
+      </app-fila>
+    } @empty { <app-vacio /> }
+  </div>
+</app-panel>
+
+@if (abierto()) {
+  <app-miembro-form (guardado)="alGuardar($event)" (cerrar)="abierto.set(false)" />
+}
