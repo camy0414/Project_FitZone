@@ -82,6 +82,11 @@ public class SecurityConfig {
 						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE", "ENTRENADOR_SEDE")
 						.requestMatchers("/inscripcion/create/**").hasAnyRole("ADMIN_SISTEMA", "RECEPCIONISTA_SEDE")
 						.requestMatchers("/inscripcion/updateasistencia/**").hasAnyRole("ADMIN_SISTEMA", "ENTRENADOR_SEDE")
+						// Equipos y mantenimientos
+						.requestMatchers("/equipo/getall", "/equipo/get/**", "/equipo/create", "/equipo/update/**")
+						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE")
+						.requestMatchers("/mantenimiento/getall", "/mantenimiento/getbyequipo/**", "/mantenimiento/get/**", "/mantenimiento/create")
+						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE")
 						.anyRequest().authenticated())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authenticationProvider(authenticationProvider())
