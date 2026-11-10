@@ -9,6 +9,8 @@ public class MembresiaPorVencerDTO {
 	private String miembro;
 	private String telefono;
 	private String correo;
+	private Long idSede;
+	private String sede;
 	private String plan;
 	private LocalDate fechaFin;
 	private Integer diasRestantes;
@@ -17,13 +19,16 @@ public class MembresiaPorVencerDTO {
 		
 	}
 
-	public MembresiaPorVencerDTO(Long idMembresia, Long idMiembro, String miembro, String telefono, String correo, String plan, LocalDate fechaFin, Integer diasRestantes) {
+	public MembresiaPorVencerDTO(Long idMembresia, Long idMiembro, String miembro, String telefono, String correo,
+			Long idSede, String sede, String plan, LocalDate fechaFin, Integer diasRestantes) {
 		super();
 		this.idMembresia = idMembresia;
 		this.idMiembro = idMiembro;
 		this.miembro = miembro;
 		this.telefono = telefono;
 		this.correo = correo;
+		this.idSede = idSede;
+		this.sede = sede;
 		this.plan = plan;
 		this.fechaFin = fechaFin;
 		this.diasRestantes = diasRestantes;
@@ -69,6 +74,22 @@ public class MembresiaPorVencerDTO {
 		this.correo = correo;
 	}
 
+	public Long getIdSede() {
+		return idSede;
+	}
+
+	public void setIdSede(Long idSede) {
+		this.idSede = idSede;
+	}
+
+	public String getSede() {
+		return sede;
+	}
+
+	public void setSede(String sede) {
+		this.sede = sede;
+	}
+
 	public String getPlan() {
 		return plan;
 	}
@@ -92,4 +113,5 @@ public class MembresiaPorVencerDTO {
 	public void setDiasRestantes(Integer diasRestantes) {
 		this.diasRestantes = diasRestantes;
 	}
+
 }

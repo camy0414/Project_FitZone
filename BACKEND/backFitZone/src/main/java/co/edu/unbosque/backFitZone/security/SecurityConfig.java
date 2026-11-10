@@ -95,6 +95,9 @@ public class SecurityConfig {
 						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE", "ENTRENADOR_SEDE")
 						.requestMatchers("/reporte/membresiasporvencer")
 						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE")
+						.requestMatchers("/reporte/ingresos")
+						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE")
+						.requestMatchers("/reporte/mantenimientos").hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE")
 						// Auditoria
 						.requestMatchers("/auditoria/getall").hasRole("ADMIN_SISTEMA")
 						.anyRequest().authenticated())

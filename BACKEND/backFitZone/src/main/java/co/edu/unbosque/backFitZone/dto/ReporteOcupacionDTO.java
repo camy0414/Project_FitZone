@@ -8,7 +8,9 @@ public class ReporteOcupacionDTO {
 
 	private Long numeroSesion;
 	private String clase;
+	private Long idSede;        
 	private String sede;
+	private String entrenador;
 	private LocalDate fecha;
 	private LocalTime horaInicio;
 	private Integer cupoMaximo;
@@ -20,11 +22,15 @@ public class ReporteOcupacionDTO {
 		
 	}
 
-	public ReporteOcupacionDTO(Long numeroSesion, String clase, String sede, LocalDate fecha, LocalTime horaInicio, Integer cupoMaximo, Long inscritos, Long asistentes, BigDecimal pctOcupacion) {
+	public ReporteOcupacionDTO(Long numeroSesion, String clase, Long idSede, String sede, String entrenador,
+			LocalDate fecha, LocalTime horaInicio, Integer cupoMaximo, Long inscritos, Long asistentes,
+			BigDecimal pctOcupacion) {
 		super();
 		this.numeroSesion = numeroSesion;
 		this.clase = clase;
+		this.idSede = idSede;
 		this.sede = sede;
+		this.entrenador = entrenador;
 		this.fecha = fecha;
 		this.horaInicio = horaInicio;
 		this.cupoMaximo = cupoMaximo;
@@ -49,12 +55,28 @@ public class ReporteOcupacionDTO {
 		this.clase = clase;
 	}
 
+	public Long getIdSede() {
+		return idSede;
+	}
+
+	public void setIdSede(Long idSede) {
+		this.idSede = idSede;
+	}
+
 	public String getSede() {
 		return sede;
 	}
 
 	public void setSede(String sede) {
 		this.sede = sede;
+	}
+
+	public String getEntrenador() {
+		return entrenador;
+	}
+
+	public void setEntrenador(String entrenador) {
+		this.entrenador = entrenador;
 	}
 
 	public LocalDate getFecha() {
@@ -104,4 +126,6 @@ public class ReporteOcupacionDTO {
 	public void setPctOcupacion(BigDecimal pctOcupacion) {
 		this.pctOcupacion = pctOcupacion;
 	}
+
+	
 }
