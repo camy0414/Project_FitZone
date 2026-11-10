@@ -1,9 +1,10 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Observable, forkJoin, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { DataService } from './data.service';
 import { AnalisisMongo } from '../model/analisis';
+import { Auditoria } from '../model/auditoria';
 import { Catalogo } from '../model/catalogo';
 import { Clase, EdicionClase, NuevaClase } from '../model/clase';
 import { EdicionEmpleado, Empleado, NuevoEmpleado } from '../model/empleado';
@@ -18,27 +19,57 @@ import { EdicionSede, NuevaSede, Sede } from '../model/sede';
 import { Inscripcion, NuevaSesion, Sesion } from '../model/sesion';
 import { LoginRespuesta } from '../model/usuario';
 
-type Respuesta = { mensaje: string };
+/**
+ * El backend responde las escrituras con un texto ("miembro #5 registrado") o con { mensaje }.
+ * Se devuelve el texto con la primera letra en mayúscula para mostrarlo en el aviso.
+ */
+function textoRespuesta(cuerpo: string | null): string {
+  let t = (cuerpo ?? '').trim();
+  try {
+    const json = JSON.parse(t);
+    if (json && typeof json.mensaje === 'string') t = json.mensaje;
+  } catch {
+    /* era texto plano */
+  }
+  return t ? t[0].toUpperCase() + t.slice(1) : 'Operación realizada.';
+}
+
+/** Los planes llegan en mayúscula desde tipo_plan (MENSUAL); el front los muestra en minúscula. */
+const plan = (p: string | null | undefined) => (p ? p.toLowerCase() : null);
+const miembroDesdeApi = (m: Miembro): Miembro => ({ ...m, planActual: plan(m.planActual) });
+const membresiaDesdeApi = (m: Membresia): Membresia => ({ ...m, plan: plan(m.plan) ?? m.plan });
+/** Las horas (LocalTime) llegan como 'HH:MM:SS'; el front usa 'HH:MM'. */
+const hora = (h: string | null | undefined) => (h ? h.slice(0, 5) : '');
+
+/** Los catálogos llegan con su propio id (idTipoPlan, idMetodoPago…); el front usa { id, nombre }. */
+const catalogo = (campoId: string, minuscula = false) =>
+  map((l: Record<string, unknown>[]) =>
+    l.map((x): Catalogo => ({ id: Number(x[campoId]), nombre: minuscula ? String(x['nombre']).toLowerCase() : String(x['nombre']) })),
+  );
+
+/** /equipo/getall no trae la fecha del último mantenimiento: se calcula con /mantenimiento/getall. */
+type EquipoApi = Omit<Equipo, 'ultimoMantenimiento'>;
+const ultimoMantenimiento = (l: Mantenimiento[], idEquipo: number): string | null =>
+  l.filter((m) => m.idEquipo === idEquipo).reduce<string | null>((max, m) => (!max || m.fechaMantenimiento > max ? m.fechaMantenimiento : max), null);
 
 /** Consume la API REST de Spring Boot (ver README para la lista de endpoints). */
 @Injectable()
 export class HttpDataService extends DataService {
-  private http = inject(HttpClient);
-  private base = environment.apiUrl;
+  protected http = inject(HttpClient);
+  protected base = environment.apiUrl;
 
-  private get<T>(ruta: string, params?: HttpParams) { return this.http.get<T>(`${this.base}${ruta}`, { params }); }
-  /** El backend responde { mensaje: '...' } en las escrituras. */
-  private post(ruta: string, cuerpo: unknown): Observable<string> {
-    return this.http.post<Respuesta>(`${this.base}${ruta}`, cuerpo).pipe(map((r) => r.mensaje));
+  protected get<T>(ruta: string, params?: HttpParams) { return this.http.get<T>(`${this.base}${ruta}`, { params }); }
+  protected post(ruta: string, cuerpo: unknown): Observable<string> {
+    return this.http.post(`${this.base}${ruta}`, cuerpo, { responseType: 'text' }).pipe(map(textoRespuesta));
   }
-  private put(ruta: string, cuerpo: unknown): Observable<string> {
-    return this.http.put<Respuesta>(`${this.base}${ruta}`, cuerpo).pipe(map((r) => r.mensaje));
+  protected put(ruta: string, cuerpo: unknown): Observable<string> {
+    return this.http.put(`${this.base}${ruta}`, cuerpo, { responseType: 'text' }).pipe(map(textoRespuesta));
   }
-  private patch(ruta: string, cuerpo: unknown): Observable<string> {
-    return this.http.patch<Respuesta>(`${this.base}${ruta}`, cuerpo).pipe(map((r) => r.mensaje));
+  protected patch(ruta: string, cuerpo: unknown): Observable<string> {
+    return this.http.patch(`${this.base}${ruta}`, cuerpo, { responseType: 'text' }).pipe(map(textoRespuesta));
   }
-  private delete(ruta: string): Observable<string> {
-    return this.http.delete<Respuesta>(`${this.base}${ruta}`).pipe(map((r) => r.mensaje));
+  protected delete(ruta: string): Observable<string> {
+    return this.http.delete(`${this.base}${ruta}`, { responseType: 'text' }).pipe(map(textoRespuesta));
   }
   private filtro(f: FiltroReporte) {
     let p = new HttpParams().set('desde', f.desde).set('hasta', f.hasta);
@@ -46,55 +77,100 @@ export class HttpDataService extends DataService {
     return p;
   }
 
+  /** No se usa con el backend real: el login lo hace AuthService (POST /auth/login + GET /auth/me). */
   login(correo: string, clave: string): Observable<LoginRespuesta> {
     return this.http.post<LoginRespuesta>(`${this.base}/auth/login`, { correo, clave });
   }
-  sedes() { return this.get<Sede[]>('/sedes'); }
-  empleados() { return this.get<Empleado[]>('/empleados'); }
-  miembros() { return this.get<Miembro[]>('/miembros'); }
-  miembrosCadena() { return this.get<Miembro[]>('/miembros', new HttpParams().set('alcance', 'cadena')); }
-  detalleMiembro(id: number) { return this.get<MiembroDetalle>(`/miembros/${id}`); }
-  membresias() { return this.get<Membresia[]>('/membresias'); }
-  pagos() { return this.get<Pago[]>('/pagos'); }
-  clases() { return this.get<Clase[]>('/clases'); }
-  sesiones() { return this.get<Sesion[]>('/sesiones'); }
-  equipos() { return this.get<Equipo[]>('/equipos'); }
-  mantenimientos() { return this.get<Mantenimiento[]>('/mantenimientos'); }
-  inscripciones(n: number) { return this.get<Inscripcion[]>(`/sesiones/${n}/inscripciones`); }
 
-  planes() { return this.get<Catalogo[]>('/catalogos/planes'); }
-  metodosPago() { return this.get<Catalogo[]>('/catalogos/metodos-pago'); }
-  tiposEquipo() { return this.get<Catalogo[]>('/catalogos/tipos-equipo'); }
-  roles() { return this.get<Catalogo[]>('/catalogos/roles'); }
+  // ---------- Sedes (SedeController) ----------
+  sedes() { return this.get<Sede[]>('/sede/getall'); }
+  crearSede(d: NuevaSede) { return this.post('/sede/create', d); }
+  editarSede(id: number, d: EdicionSede) { return this.put(`/sede/update/${id}`, d); }
 
-  reporteIngresos(f: FiltroReporte) { return this.get<ReporteIngreso[]>('/reportes/ingresos', this.filtro(f)); }
-  reporteOcupacion(f: FiltroReporte) { return this.get<ReporteOcupacion[]>('/reportes/ocupacion', this.filtro(f)); }
+  // ---------- Empleados (EmpleadoController) ----------
+  empleados() { return this.get<Empleado[]>('/empleado/getall'); }
+  crearEmpleado(d: NuevoEmpleado) { return this.post('/empleado/create', d); }
+  editarEmpleado(id: number, d: EdicionEmpleado) { return this.put(`/empleado/update/${id}`, d); }
+  cambiarEstadoEmpleado(id: number, activo: boolean) { return this.put(`/empleado/updateestado/${id}`, { activo }); }
+
+  // ---------- Miembros (MiembroController) ----------
+  miembros() { return this.get<Miembro[]>('/miembro/getall').pipe(map((l) => l.map(miembroDesdeApi))); }
+  miembrosCadena() { return this.get<Miembro[]>('/miembro/getmiembroscadena').pipe(map((l) => l.map(miembroDesdeApi))); }
+  detalleMiembro(id: number) {
+    return this.get<MiembroDetalle>(`/miembro/get/${id}`).pipe(
+      map((d) => ({
+        ...d,
+        miembro: miembroDesdeApi(d.miembro),
+        membresias: (d.membresias ?? []).map(membresiaDesdeApi),
+        pagos: d.pagos ?? [],
+        inscripciones: (d.inscripciones ?? []).map((i) => ({ ...i, horaInicio: hora(i.horaInicio) })),
+      })),
+    );
+  }
+  crearMiembro(d: NuevoMiembro) { return this.post('/miembro/create', d); }
+  editarMiembro(id: number, d: EdicionMiembro) { return this.put(`/miembro/update/${id}`, d); }
+
+  // ---------- Membresías y pagos (MembresiaController, PagoController) ----------
+  membresias() { return this.get<Membresia[]>('/membresia/getall').pipe(map((l) => l.map(membresiaDesdeApi))); }
+  renovarMembresia(d: RenovarMembresia) { return this.post('/membresia/renovar', d); }
+  pagos() { return this.get<Pago[]>('/pago/getall'); }
+
+  // ---------- Clases, sesiones e inscripciones ----------
+  clases() { return this.get<Clase[]>('/clase/getall'); }
+  crearClase(d: NuevaClase) { return this.post('/clase/create', d); }
+  editarClase(id: number, d: EdicionClase) { return this.put(`/clase/update/${id}`, d); }
+  sesiones() {
+    return this.get<Sesion[]>('/sesion/getall').pipe(
+      map((l) => l.map((s) => ({ ...s, horaInicio: hora(s.horaInicio), horaFin: hora(s.horaFin) }))),
+    );
+  }
+  crearSesion(d: NuevaSesion) { return this.post('/sesion/create', d); }
+  inscripciones(n: number) { return this.get<Inscripcion[]>(`/inscripcion/get/${n}`); }
+  inscribir(n: number, idMiembro: number) { return this.post(`/inscripcion/create/${n}`, { idMiembro }); }
+  marcarAsistencia(n: number, idMiembro: number, asistio: boolean) {
+    return this.put(`/inscripcion/updateasistencia/${n}`, { idMiembro, asistio });
+  }
+
+  // ---------- Equipos y mantenimientos ----------
+  equipos() {
+    return forkJoin({ equipos: this.get<EquipoApi[]>('/equipo/getall'), mant: this.mantenimientos() }).pipe(
+      map(({ equipos, mant }) => equipos.map((e) => ({ ...e, ultimoMantenimiento: ultimoMantenimiento(mant, e.idEquipo) }))),
+    );
+  }
+  crearEquipo(d: NuevoEquipo) { return this.post('/equipo/create', d); }
+  editarEquipo(id: number, d: EdicionEquipo) { return this.put(`/equipo/update/${id}`, d); }
+  mantenimientos() { return this.get<Mantenimiento[]>('/mantenimiento/getall'); }
+  crearMantenimiento(d: NuevoMantenimiento) { return this.post('/mantenimiento/create', d); }
+
+  // ---------- Catálogos (CatalogosController) ----------
+  planes() { return this.get<Record<string, unknown>[]>('/catalogo/tipoplan/getall').pipe(catalogo('idTipoPlan', true)); }
+  metodosPago() { return this.get<Record<string, unknown>[]>('/catalogo/metodopago/getall').pipe(catalogo('idMetodoPago')); }
+  tiposEquipo() { return this.get<Record<string, unknown>[]>('/catalogo/tipoequipo/getall').pipe(catalogo('idTipoEquipo')); }
+  roles() { return this.get<Record<string, unknown>[]>('/catalogo/rolempleado/getall').pipe(catalogo('idRolEmpleado')); }
+
+  // ---------- Auditoría (AuditoriaController) ----------
+  auditoria() { return this.get<Auditoria[]>('/auditoria/getall'); }
+
+  // ---------- Reportes (ReportesController) ----------
+  /** El backend no envía idSede ni entrenador en este reporte. */
+  reporteOcupacion(f: FiltroReporte) {
+    return this.get<ReporteOcupacion[]>('/reporte/ocupacionsedesesion', this.filtro(f)).pipe(
+      map((l) => l.map((r) => ({ ...r, idSede: r.idSede ?? 0, entrenador: r.entrenador ?? '', horaInicio: hora(r.horaInicio) }))),
+    );
+  }
+  /** El backend no envía la sede en este reporte. */
   membresiasPorVencer(dias: number, idSede: number | null) {
     let p = new HttpParams().set('dias', dias);
     if (idSede !== null) p = p.set('idSede', idSede);
-    return this.get<MembresiaPorVencer[]>('/reportes/membresias-por-vencer', p);
+    return this.get<MembresiaPorVencer[]>('/reporte/membresiasporvencer', p).pipe(
+      map((l) => l.map((r) => ({ ...r, plan: plan(r.plan) ?? r.plan, idSede: r.idSede ?? 0, sede: r.sede ?? '' }))),
+    );
   }
-  reporteMantenimientos(f: FiltroReporte) { return this.get<ReporteMantenimiento[]>('/reportes/mantenimientos', this.filtro(f)); }
+  // Aún sin endpoint en el backend: en modo mixto los atiende HibridoDataService con datos de ejemplo.
+  reporteIngresos(f: FiltroReporte) { return this.get<ReporteIngreso[]>('/reporte/ingresos', this.filtro(f)); }
+  reporteMantenimientos(f: FiltroReporte) { return this.get<ReporteMantenimiento[]>('/reporte/mantenimientos', this.filtro(f)); }
 
-  crearSede(d: NuevaSede) { return this.post('/sedes', d); }
-  editarSede(id: number, d: EdicionSede) { return this.put(`/sedes/${id}`, d); }
-  crearEmpleado(d: NuevoEmpleado) { return this.post('/empleados', d); }
-  editarEmpleado(id: number, d: EdicionEmpleado) { return this.put(`/empleados/${id}`, d); }
-  cambiarEstadoEmpleado(id: number, activo: boolean) { return this.patch(`/empleados/${id}/estado`, { activo }); }
-  crearMiembro(d: NuevoMiembro) { return this.post('/miembros', d); }
-  editarMiembro(id: number, d: EdicionMiembro) { return this.put(`/miembros/${id}`, d); }
-  renovarMembresia(d: RenovarMembresia) { return this.post('/membresias/renovar', d); }
-  crearClase(d: NuevaClase) { return this.post('/clases', d); }
-  editarClase(id: number, d: EdicionClase) { return this.put(`/clases/${id}`, d); }
-  crearSesion(d: NuevaSesion) { return this.post('/sesiones', d); }
-  inscribir(n: number, idMiembro: number) { return this.post(`/sesiones/${n}/inscripciones`, { idMiembro }); }
-  marcarAsistencia(n: number, idMiembro: number, asistio: boolean) {
-    return this.patch(`/sesiones/${n}/inscripciones/${idMiembro}`, { asistio });
-  }
-  crearEquipo(d: NuevoEquipo) { return this.post('/equipos', d); }
-  editarEquipo(id: number, d: EdicionEquipo) { return this.put(`/equipos/${id}`, d); }
-  crearMantenimiento(d: NuevoMantenimiento) { return this.post('/mantenimientos', d); }
-
+  // ---------- MongoDB (aún sin endpoints en el backend) ----------
   rutinas() { return this.get<Rutina[]>('/rutinas'); }
   crearRutina(d: NuevaRutina) { return this.post('/rutinas', d); }
   editarRutina(id: string, d: EdicionRutina) { return this.put(`/rutinas/${id}`, d); }

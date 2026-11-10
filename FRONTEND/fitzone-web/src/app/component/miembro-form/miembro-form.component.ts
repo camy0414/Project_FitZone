@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, ou
 import { FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from '../../service/auth';
 import { DataService } from '../../service/data.service';
-import { LIMITES, TIPOS_SANGRE } from '../../service/validaciones';
+import { LIMITES, MENSAJE_FORMATO, PATRONES, TIPOS_SANGRE } from '../../service/validaciones';
 import { InfoMedica, Miembro, NuevoMiembro } from '../../model/miembro';
 import { Sede } from '../../model/sede';
 import { mensajeError } from '../../service/util';
@@ -32,6 +32,7 @@ export class MiembroFormComponent implements OnInit {
   readonly esEdicion = computed(() => this.miembro() !== null);
   readonly esAdmin = computed(() => this.usuario()?.rol === 'ADMIN_SISTEMA');
   readonly tiposSangre = TIPOS_SANGRE;
+  readonly msg = MENSAJE_FORMATO;
   readonly max = { ...LIMITES.persona, ...LIMITES.infoMedica };
   readonly sedes = signal<Sede[]>([]);
   readonly conMedica = signal(false);
@@ -39,14 +40,14 @@ export class MiembroFormComponent implements OnInit {
   readonly error = signal('');
 
   readonly form = this.fb.nonNullable.group({
-    primerNombre: ['', [Validators.required, Validators.maxLength(LIMITES.persona.nombre)]],
-    segundoNombre: ['', Validators.maxLength(LIMITES.persona.nombre)],
-    primerApellido: ['', [Validators.required, Validators.maxLength(LIMITES.persona.apellido)]],
-    segundoApellido: ['', Validators.maxLength(LIMITES.persona.apellido)],
-    telefono: ['', [Validators.required, Validators.maxLength(LIMITES.persona.telefono)]],
-    correo: ['', [Validators.required, Validators.email, Validators.maxLength(LIMITES.persona.correo)]],
+    primerNombre: ['', [Validators.required, Validators.maxLength(LIMITES.persona.nombre), Validators.pattern(PATRONES.nombre)]],
+    segundoNombre: ['', [Validators.maxLength(LIMITES.persona.nombre), Validators.pattern(PATRONES.nombre)]],
+    primerApellido: ['', [Validators.required, Validators.maxLength(LIMITES.persona.apellido), Validators.pattern(PATRONES.nombre)]],
+    segundoApellido: ['', [Validators.maxLength(LIMITES.persona.apellido), Validators.pattern(PATRONES.nombre)]],
+    telefono: ['', [Validators.required, Validators.maxLength(LIMITES.persona.telefono), Validators.pattern(PATRONES.telefono)]],
+    correo: ['', [Validators.required, Validators.maxLength(LIMITES.persona.correo), Validators.pattern(PATRONES.correo)]],
     idSede: [0, Validators.min(1)],
-    contactoEmergencia: ['', Validators.maxLength(LIMITES.infoMedica.contactoEmergencia)],
+    contactoEmergencia: ['', [Validators.maxLength(LIMITES.infoMedica.contactoEmergencia), Validators.pattern(PATRONES.telefono)]],
     tipoSangre: [''],
     condicionMedica: ['', Validators.maxLength(LIMITES.infoMedica.condicionMedica)],
   });
@@ -65,13 +66,14 @@ export class MiembroFormComponent implements OnInit {
     this.fijarMedica(i !== null);
   }
 
-  /** Si se registra info médica, contacto y tipo de sangre son NOT NULL en el modelo. */
+  /** Si se registra info médica, contacto (un teléfono) y tipo de sangre son NOT NULL en el modelo. */
   fijarMedica(on: boolean) {
     this.conMedica.set(on);
     const c = this.form.controls;
+    // sin info médica los campos se ocultan, así que no se validan
     c.contactoEmergencia.setValidators(on
-      ? [Validators.required, Validators.maxLength(LIMITES.infoMedica.contactoEmergencia)]
-      : Validators.maxLength(LIMITES.infoMedica.contactoEmergencia));
+      ? [Validators.required, Validators.maxLength(LIMITES.infoMedica.contactoEmergencia), Validators.pattern(PATRONES.telefono)]
+      : null);
     c.tipoSangre.setValidators(on ? Validators.required : null);
     c.contactoEmergencia.updateValueAndValidity();
     c.tipoSangre.updateValueAndValidity();

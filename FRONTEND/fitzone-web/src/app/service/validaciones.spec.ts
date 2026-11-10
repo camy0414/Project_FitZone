@@ -1,4 +1,4 @@
-import { aMinutos, seCruzan, textoDuracion, validarHorarioSesion } from './validaciones';
+import { PATRONES, aMinutos, seCruzan, textoDuracion, validarHorarioSesion } from './validaciones';
 
 describe('validaciones de sesión', () => {
   const futuro = '2099-01-01';
@@ -32,5 +32,22 @@ describe('validaciones de sesión', () => {
   it('detecta cruces de horario', () => {
     expect(seCruzan({ horaInicio: '12:05', horaFin: '16:50' }, { horaInicio: '14:20', horaFin: '15:00' })).toBe(true);
     expect(seCruzan({ horaInicio: '09:00', horaFin: '10:00' }, { horaInicio: '10:00', horaFin: '11:00' })).toBe(false);
+  });
+});
+
+describe('PATRONES', () => {
+  it('nombre: acepta letras con tildes y varias palabras; rechaza números', () => {
+    for (const ok of ['Martínez', 'María José', "D'Angelo", 'Peña-Gómez']) expect(PATRONES.nombre.test(ok)).toBe(true);
+    for (const mal of ['Suare7', 'Ana!', ' Ana', 'Ana  Luz']) expect(PATRONES.nombre.test(mal)).toBe(false);
+  });
+
+  it('teléfono: solo dígitos (7 a 15) con + opcional', () => {
+    for (const ok of ['3001234567', '+573001234567', '6012345']) expect(PATRONES.telefono.test(ok)).toBe(true);
+    for (const mal of ['dfsdv', '300 123 4567', '123']) expect(PATRONES.telefono.test(mal)).toBe(false);
+  });
+
+  it('correo: exige dominio completo', () => {
+    expect(PATRONES.correo.test('ana@gmail.com')).toBe(true);
+    expect(PATRONES.correo.test('ana@gmail')).toBe(false);
   });
 });

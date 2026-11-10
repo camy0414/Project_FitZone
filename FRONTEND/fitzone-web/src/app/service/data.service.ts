@@ -1,5 +1,6 @@
 import { Observable } from 'rxjs';
 import { AnalisisMongo } from '../model/analisis';
+import { Auditoria } from '../model/auditoria';
 import { Catalogo } from '../model/catalogo';
 import { Clase, EdicionClase, NuevaClase } from '../model/clase';
 import { EdicionEmpleado, Empleado, NuevoEmpleado } from '../model/empleado';
@@ -85,4 +86,7 @@ export abstract class DataService {
   abstract editarProgreso(idProgreso: string, d: EdicionProgreso): Observable<string>;
   abstract eliminarProgreso(idProgreso: string): Observable<string>;
   abstract analisisMongo(): Observable<AnalisisMongo>;
+
+  // Auditoría (tabla auditoria, solo administrador)
+  abstract auditoria(): Observable<Auditoria[]>;
 }

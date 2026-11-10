@@ -3,7 +3,8 @@
  * regla de negocio que falló); los genéricos solo si no hay mensaje.
  */
 export function mensajeError(e: any): string {
-  const propio = e?.error?.mensaje ?? e?.error?.message;
+  // el backend puede responder { mensaje } o un texto plano
+  const propio = typeof e?.error === 'string' && e.error.trim() ? e.error : e?.error?.mensaje ?? e?.error?.message;
   if (propio) return propio;
   if (e?.status === 0) return 'No se pudo conectar con el servidor.';
   if (e?.status === 401) return 'Tu sesión expiró. Vuelve a ingresar.';

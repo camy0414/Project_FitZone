@@ -16,6 +16,26 @@ export const LIMITES = {
   mantenimiento: { descripcion: 100 },
 } as const;
 
+/**
+ * Formatos de texto. Validators.email de Angular acepta correos sin dominio (ana@gmail),
+ * por eso el correo también lleva su propio patrón.
+ */
+export const PATRONES = {
+  /** Letras (con tildes y ñ); varias palabras separadas por un espacio, apóstrofo o guion. */
+  nombre: /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?:[ '-][A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$/,
+  /** Solo dígitos, de 7 a 15, con + opcional al inicio para el indicativo. */
+  telefono: /^\+?\d{7,15}$/,
+  /** usuario@dominio.ext */
+  correo: /^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$/,
+} as const;
+
+/** Mensaje para mostrar debajo de un campo según el error que tenga. */
+export const MENSAJE_FORMATO = {
+  nombre: 'Solo letras, sin números ni símbolos.',
+  telefono: 'Solo números (7 a 15 dígitos).',
+  correo: 'Escribe un correo válido.',
+} as const;
+
 /** Valores permitidos para info_medica.tipo_sangre (VARCHAR(5)). */
 export const TIPOS_SANGRE = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'] as const;
 
