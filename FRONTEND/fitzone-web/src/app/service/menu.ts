@@ -23,6 +23,7 @@ export const MENU: Record<RolNombre, ItemMenu[]> = {
     { etiqueta: 'Progreso físico', ruta: '/progreso', icono: 'trending-up' },
     { etiqueta: 'Análisis (MongoDB)', ruta: '/analisis', icono: 'database' },
     { etiqueta: 'Reportes', ruta: '/reportes', icono: 'chart' },
+    { etiqueta: 'Auditoría', ruta: '/auditoria', icono: 'lock' },
   ],
   GERENTE_SEDE: [
     { etiqueta: 'Resumen', ruta: '/resumen', icono: 'layout-dashboard' },
@@ -65,6 +66,7 @@ export const primeraRuta = (rol: RolNombre) => MENU[rol][0].ruta;
 /** Roles con acceso a cada módulo (debe coincidir con los permisos de la BD). */
 export const ACCESO: Record<string, RolNombre[]> = {
   sedes: ['ADMIN_SISTEMA'],
+  auditoria: ['ADMIN_SISTEMA'],
   empleados: ['ADMIN_SISTEMA', 'GERENTE_SEDE'],
   miembros: ['ADMIN_SISTEMA', 'GERENTE_SEDE', 'RECEPCIONISTA_SEDE'],
   membresias: ['ADMIN_SISTEMA', 'GERENTE_SEDE', 'RECEPCIONISTA_SEDE'],

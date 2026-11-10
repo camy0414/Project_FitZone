@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, delay, of, throwError } from 'rxjs';
 import { DataService } from './data.service';
+import { Auditoria } from '../model/auditoria';
 import { AnalisisMongo, EjercicioFrecuente, PromedioSede, RutinasEntrenador, TendenciaMiembro } from '../model/analisis';
 import { Clase, EdicionClase, NuevaClase } from '../model/clase';
 import { EdicionEmpleado, Empleado, NuevoEmpleado } from '../model/empleado';
@@ -61,6 +62,16 @@ export class MockDataService extends DataService {
     super();
     this.recalcularInscritos();
     this.recalcularPlanes();
+  }
+
+  /**
+   * Modo mixto: cuando los miembros vienen del backend, se copian aquí para que los módulos que
+   * siguen con datos de ejemplo (membresías, inscripciones, rutinas…) reconozcan a esos miembros.
+   */
+  sincronizarMiembros(reales: Miembro[]) {
+    const porId = new Map(this.lMiembros.map((m) => [m.idMiembro, m]));
+    for (const r of reales) porId.set(r.idMiembro, { ...porId.get(r.idMiembro), ...r });
+    this.lMiembros = [...porId.values()];
   }
 
   // ---------- utilidades ----------
@@ -333,9 +344,8 @@ export class MockDataService extends DataService {
     this.lMiembros = this.lMiembros.map((v) => (v.idMiembro === id
       ? { ...v, ...p, nombreCompleto: nombre, correo, telefono: x.telefono.trim(), idSede: sede.idSede, sede: sede.nombre }
       : v));
-    // info_medica: se crea, actualiza o elimina junto con el miembro (relación 1:1 opcional).
+    // info_medica: se crea o se actualiza (igual que el backend, no se elimina al editar).
     if (x.infoMedica) this.lInfoMedica.set(id, { ...x.infoMedica, condicionMedica: limpio(x.infoMedica.condicionMedica) });
-    else this.lInfoMedica.delete(id);
     const r = <T extends { idMiembro: number; miembro: string }>(l: T[]) => l.map((v) => (v.idMiembro === id ? { ...v, miembro: nombre } : v));
     this.lMembresias = r(this.lMembresias).map((v) => (v.idMiembro === id ? { ...v, idSede: sede.idSede } : v));
     this.lPagos = r(this.lPagos).map((v) => (v.idMiembro === id ? { ...v, idSede: sede.idSede } : v));
@@ -650,5 +660,27 @@ export class MockDataService extends DataService {
     const rutinasEntrenador = [...ent.values()].sort((a, b) => b.activas + b.inactivas - (a.activas + a.inactivas));
 
     return this.ok({ tendencias, promediosSede, ejercicios, rutinasEntrenador });
+  }
+
+  // ---------- Auditoría ----------
+  /**
+   * Simula lo que dejan los triggers del script 03: cada pago y cada membresía registrados
+   * quedan como INSERT, hechos por un recepcionista de la sede.
+   */
+  auditoria(): Observable<Auditoria[]> {
+    const recepcion = (idSede: number) =>
+      this.lEmpleados.find((e) => e.idSede === idSede && e.rol === 'RECEPCIONISTA_SEDE') ?? null;
+    const fila = (tabla: string, id: number, idSede: number, fecha: string, hora: string) => {
+      const e = recepcion(idSede);
+      return {
+        tabla, operacion: 'INSERT', idRegistro: String(id), rolBd: 'rol_recepcionista_sede',
+        idEmpleado: e?.idEmpleado ?? null, empleado: e?.nombreCompleto ?? null, fecha: `${fecha}T${hora}`,
+      };
+    };
+    const filas = [
+      ...this.lPagos.map((p) => fila('pago', p.idPago, p.idSede, p.fechaPago, '10:15:00')),
+      ...this.lMembresias.map((m) => fila('membresia', m.idMembresia, m.idSede, m.fechaInicio, '10:14:00')),
+    ].sort((a, b) => b.fecha.localeCompare(a.fecha));
+    return this.ok(filas.map((f, i): Auditoria => ({ idAuditoria: filas.length - i, ...f })));
   }
 }

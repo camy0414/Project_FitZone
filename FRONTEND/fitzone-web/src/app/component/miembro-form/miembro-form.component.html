@@ -4,25 +4,27 @@
       <div>
         <label class="fz-label" for="pn">Primer nombre *</label>
         <input id="pn" class="fz-input" formControlName="primerNombre" [maxlength]="max.nombre" />
-        @if (form.controls.primerNombre.touched && form.controls.primerNombre.invalid) { <p class="fz-error">Obligatorio.</p> }
+        @if (form.controls.primerNombre.touched && form.controls.primerNombre.invalid) { <p class="fz-error">{{ form.controls.primerNombre.hasError('required') ? 'Obligatorio.' : msg.nombre }}</p> }
       </div>
       <div>
         <label class="fz-label" for="sn">Segundo nombre</label>
         <input id="sn" class="fz-input" formControlName="segundoNombre" [maxlength]="max.nombre" />
+        @if (form.controls.segundoNombre.invalid) { <p class="fz-error">{{ msg.nombre }}</p> }
       </div>
       <div>
         <label class="fz-label" for="pa">Primer apellido *</label>
         <input id="pa" class="fz-input" formControlName="primerApellido" [maxlength]="max.apellido" />
-        @if (form.controls.primerApellido.touched && form.controls.primerApellido.invalid) { <p class="fz-error">Obligatorio.</p> }
+        @if (form.controls.primerApellido.touched && form.controls.primerApellido.invalid) { <p class="fz-error">{{ form.controls.primerApellido.hasError('required') ? 'Obligatorio.' : msg.nombre }}</p> }
       </div>
       <div>
         <label class="fz-label" for="sa">Segundo apellido</label>
         <input id="sa" class="fz-input" formControlName="segundoApellido" [maxlength]="max.apellido" />
+        @if (form.controls.segundoApellido.invalid) { <p class="fz-error">{{ msg.nombre }}</p> }
       </div>
       <div>
         <label class="fz-label" for="tel">Teléfono *</label>
-        <input id="tel" class="fz-input" formControlName="telefono" [maxlength]="max.telefono" />
-        @if (form.controls.telefono.touched && form.controls.telefono.invalid) { <p class="fz-error">Obligatorio.</p> }
+        <input id="tel" class="fz-input" inputmode="tel" formControlName="telefono" [maxlength]="max.telefono" />
+        @if (form.controls.telefono.touched && form.controls.telefono.invalid) { <p class="fz-error">{{ form.controls.telefono.hasError('required') ? 'Obligatorio.' : msg.telefono }}</p> }
       </div>
       <div>
         <label class="fz-label" for="cor">Correo *</label>
@@ -44,15 +46,15 @@
     }
 
     <label class="flex cursor-pointer items-center gap-2 text-sm font-bold">
-      <input type="checkbox" [checked]="conMedica()" (change)="fijarMedica(!conMedica())" class="size-4 accent-orange-500" />
-      {{ esEdicion() ? 'Tiene información médica' : 'Registrar información médica (opcional)' }}
+      <input type="checkbox" [checked]="conMedica()" (change)="fijarMedica(!conMedica())" [disabled]="!!infoMedica()" class="size-4 accent-orange-500" />
+      {{ infoMedica() ? 'Información médica (se puede actualizar, no eliminar)' : esEdicion() ? 'Agregar información médica' : 'Registrar información médica (opcional)' }}
     </label>
     @if (conMedica()) {
       <div class="grid gap-4 rounded-2xl border border-black/5 bg-zinc-50 p-4 sm:grid-cols-2">
         <div>
           <label class="fz-label" for="ce">Contacto de emergencia *</label>
-          <input id="ce" class="fz-input" formControlName="contactoEmergencia" [maxlength]="max.contactoEmergencia" />
-          @if (form.controls.contactoEmergencia.touched && form.controls.contactoEmergencia.invalid) { <p class="fz-error">Obligatorio.</p> }
+          <input id="ce" class="fz-input" inputmode="tel" placeholder="Teléfono" formControlName="contactoEmergencia" [maxlength]="max.contactoEmergencia" />
+          @if (form.controls.contactoEmergencia.touched && form.controls.contactoEmergencia.invalid) { <p class="fz-error">{{ form.controls.contactoEmergencia.hasError('required') ? 'Obligatorio.' : msg.telefono }}</p> }
         </div>
         <div>
           <label class="fz-label" for="ts">Tipo de sangre *</label>
@@ -74,7 +76,4 @@
       <button type="submit" class="fz-btn" [disabled]="enviando()">{{ enviando() ? 'Guardando…' : esEdicion() ? 'Guardar cambios' : 'Registrar miembro' }}</button>
     </div>
   </form>
-  @if (esEdicion() && !conMedica() && infoMedica()) {
-    <p class="mt-3 text-xs text-amber-700">Al guardar se eliminará la información médica registrada.</p>
-  }
 </app-modal>
