@@ -91,7 +91,7 @@ public class SecurityConfig {
 						.requestMatchers("/catalogo/**")
 						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE", "ENTRENADOR_SEDE")
 						// Reportes
-						.requestMatchers("/reporte/ocupacion")
+						.requestMatchers("/reporte/ocupacionsedesesion")
 						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE", "ENTRENADOR_SEDE")
 						.requestMatchers("/reporte/membresiasporvencer")
 						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE")
