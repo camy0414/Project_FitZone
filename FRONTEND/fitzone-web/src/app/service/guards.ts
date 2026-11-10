@@ -1,11 +1,14 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from './auth';
+import { SessionStore, tokenVigente } from './sesion.store';
 import { RolNombre } from '../model/usuario';
 import { primeraRuta } from './menu';
 
 export const authGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
+  const sesion = inject(SessionStore);
+  if (auth.autenticado() && !tokenVigente(sesion.token)) sesion.limpiar(); // token vencido
   return auth.autenticado() ? true : inject(Router).createUrlTree(['/login']);
 };
 

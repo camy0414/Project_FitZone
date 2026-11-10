@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Route, RouterModule, Routes } from '@angular/router';
 import { AnalisisComponent } from './component/analisis/analisis.component';
+import { AuditoriaComponent } from './component/auditoria/auditoria.component';
 import { AsistenciaComponent } from './component/asistencia/asistencia.component';
 import { ClasesComponent } from './component/clases/clases.component';
 import { EmpleadosComponent } from './component/empleados/empleados.component';
@@ -55,6 +56,7 @@ const routes: Routes = [
       vista('progreso', ProgresoComponent),
       vista('analisis', AnalisisComponent),
       vista('reportes', ReportesComponent),
+      vista('auditoria', AuditoriaComponent),
     ],
   },
   { path: '**', redirectTo: '' },

@@ -36,6 +36,7 @@ import { MantenimientoComponent } from './component/mantenimiento/mantenimiento.
 import { RutinasComponent } from './component/rutinas/rutinas.component';
 import { ProgresoComponent } from './component/progreso/progreso.component';
 import { AnalisisComponent } from './component/analisis/analisis.component';
+import { AuditoriaComponent } from './component/auditoria/auditoria.component';
 import { ReportesComponent } from './component/reportes/reportes.component';
 import { ReporteIngresosComponent } from './component/reporte-ingresos/reporte-ingresos.component';
 import { ReporteOcupacionComponent } from './component/reporte-ocupacion/reporte-ocupacion.component';
@@ -58,7 +59,7 @@ import { CopPipe } from './pipe/cop.pipe';
 import { FechaPipe } from './pipe/fecha.pipe';
 // Servicios
 import { DataService } from './service/data.service';
-import { HttpDataService } from './service/http-data.service';
+import { HibridoDataService } from './service/hibrido-data.service';
 import { MockDataService } from './service/mock-data.service';
 import { TokenInterceptor } from './service/token.interceptor';
 
@@ -72,6 +73,7 @@ import { TokenInterceptor } from './service/token.interceptor';
     EquiposComponent, MantenimientoComponent,
     RutinasComponent, ProgresoComponent, AnalisisComponent,
     ReportesComponent, ReporteIngresosComponent, ReporteOcupacionComponent, ReportePorVencerComponent, ReporteMantenimientosComponent,
+    AuditoriaComponent,
     AvatarComponent, BarraComponent, ConfirmarComponent, FilaComponent, IconComponent, IndicadorComponent,
     ModalComponent, PanelComponent, StatusPillComponent, ToastsComponent, VacioComponent,
     CopPipe, FechaPipe,
@@ -94,8 +96,11 @@ import { TokenInterceptor } from './service/token.interceptor';
     provideHttpClient(withInterceptorsFromDi()),
     // le pone el token de la sesión a todas las peticiones al backend
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
-    // datos de ejemplo o API real según environment.useMock
-    { provide: DataService, useClass: environment.useMock ? MockDataService : HttpDataService },
+    // useMock: false -> backend (y datos de ejemplo solo para lo que aún no tiene endpoint)
+    // useMock: true  -> todo con datos de ejemplo
+    MockDataService,
+    HibridoDataService,
+    { provide: DataService, useExisting: environment.useMock ? MockDataService : HibridoDataService },
   ],
   bootstrap: [AppComponent],
 })

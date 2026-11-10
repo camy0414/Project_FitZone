@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { DataService } from '../../service/data.service';
-import { LIMITES } from '../../service/validaciones';
+import { LIMITES, MENSAJE_FORMATO, PATRONES } from '../../service/validaciones';
 import { Sede } from '../../model/sede';
 import { BuscadorService } from '../../service/buscador';
 import { NotificacionService } from '../../service/notificacion';
@@ -21,6 +21,7 @@ export class SedesComponent implements OnInit {
   private buscador = inject(BuscadorService);
 
   readonly max = LIMITES.sede;
+  readonly msg = MENSAJE_FORMATO;
   readonly cargando = signal(true);
   readonly lista = signal<Sede[]>([]);
   readonly visibles = computed(() => {
@@ -36,7 +37,7 @@ export class SedesComponent implements OnInit {
   readonly form = this.fb.nonNullable.group({
     nombre: ['', [Validators.required, Validators.maxLength(LIMITES.sede.nombre)]],
     direccion: ['', [Validators.required, Validators.maxLength(LIMITES.sede.direccion)]],
-    telefono: ['', [Validators.required, Validators.maxLength(LIMITES.sede.telefono)]],
+    telefono: ['', [Validators.required, Validators.maxLength(LIMITES.sede.telefono), Validators.pattern(PATRONES.telefono)]],
   });
 
   ngOnInit() {

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from '../../service/auth';
 import { DataService } from '../../service/data.service';
-import { LIMITES } from '../../service/validaciones';
+import { LIMITES, MENSAJE_FORMATO, PATRONES } from '../../service/validaciones';
 import { Catalogo } from '../../model/catalogo';
 import { Empleado } from '../../model/empleado';
 import { Sede } from '../../model/sede';
@@ -27,6 +27,7 @@ export class EmpleadosComponent implements OnInit {
 
   readonly esAdmin = computed(() => this.usuario()?.rol === 'ADMIN_SISTEMA');
   readonly max = LIMITES.persona;
+  readonly msg = MENSAJE_FORMATO;
   readonly cargando = signal(true);
   readonly lista = signal<Empleado[]>([]);
   readonly sedes = signal<Sede[]>([]);
@@ -44,12 +45,12 @@ export class EmpleadosComponent implements OnInit {
   readonly error = signal('');
   readonly verClave = signal(false);
   readonly form = this.fb.nonNullable.group({
-    primerNombre: ['', [Validators.required, Validators.maxLength(LIMITES.persona.nombre)]],
-    segundoNombre: ['', Validators.maxLength(LIMITES.persona.nombre)],
-    primerApellido: ['', [Validators.required, Validators.maxLength(LIMITES.persona.apellido)]],
-    segundoApellido: ['', Validators.maxLength(LIMITES.persona.apellido)],
-    telefono: ['', [Validators.required, Validators.maxLength(LIMITES.persona.telefono)]],
-    correo: ['', [Validators.required, Validators.email, Validators.maxLength(LIMITES.persona.correo)]],
+    primerNombre: ['', [Validators.required, Validators.maxLength(LIMITES.persona.nombre), Validators.pattern(PATRONES.nombre)]],
+    segundoNombre: ['', [Validators.maxLength(LIMITES.persona.nombre), Validators.pattern(PATRONES.nombre)]],
+    primerApellido: ['', [Validators.required, Validators.maxLength(LIMITES.persona.apellido), Validators.pattern(PATRONES.nombre)]],
+    segundoApellido: ['', [Validators.maxLength(LIMITES.persona.apellido), Validators.pattern(PATRONES.nombre)]],
+    telefono: ['', [Validators.required, Validators.maxLength(LIMITES.persona.telefono), Validators.pattern(PATRONES.telefono)]],
+    correo: ['', [Validators.required, Validators.maxLength(LIMITES.persona.correo), Validators.pattern(PATRONES.correo)]],
     clave: ['', [Validators.required, Validators.minLength(8)]],
     idRolEmpleado: [0, Validators.min(1)],
     idSede: [0, Validators.min(1)],

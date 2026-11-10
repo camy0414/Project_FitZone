@@ -21,25 +21,27 @@
         <div>
           <label class="fz-label" for="pn">Primer nombre *</label>
           <input id="pn" class="fz-input" formControlName="primerNombre" [maxlength]="max.nombre" />
-          @if (form.controls.primerNombre.touched && form.controls.primerNombre.invalid) { <p class="fz-error">Obligatorio.</p> }
+          @if (form.controls.primerNombre.touched && form.controls.primerNombre.invalid) { <p class="fz-error">{{ form.controls.primerNombre.hasError('required') ? 'Obligatorio.' : msg.nombre }}</p> }
         </div>
         <div>
           <label class="fz-label" for="sn">Segundo nombre</label>
           <input id="sn" class="fz-input" formControlName="segundoNombre" [maxlength]="max.nombre" />
+          @if (form.controls.segundoNombre.invalid) { <p class="fz-error">{{ msg.nombre }}</p> }
         </div>
         <div>
           <label class="fz-label" for="pa">Primer apellido *</label>
           <input id="pa" class="fz-input" formControlName="primerApellido" [maxlength]="max.apellido" />
-          @if (form.controls.primerApellido.touched && form.controls.primerApellido.invalid) { <p class="fz-error">Obligatorio.</p> }
+          @if (form.controls.primerApellido.touched && form.controls.primerApellido.invalid) { <p class="fz-error">{{ form.controls.primerApellido.hasError('required') ? 'Obligatorio.' : msg.nombre }}</p> }
         </div>
         <div>
           <label class="fz-label" for="sa">Segundo apellido</label>
           <input id="sa" class="fz-input" formControlName="segundoApellido" [maxlength]="max.apellido" />
+          @if (form.controls.segundoApellido.invalid) { <p class="fz-error">{{ msg.nombre }}</p> }
         </div>
         <div>
           <label class="fz-label" for="tel">Teléfono *</label>
-          <input id="tel" class="fz-input" formControlName="telefono" [maxlength]="max.telefono" />
-          @if (form.controls.telefono.touched && form.controls.telefono.invalid) { <p class="fz-error">Obligatorio.</p> }
+          <input id="tel" class="fz-input" inputmode="tel" formControlName="telefono" [maxlength]="max.telefono" />
+          @if (form.controls.telefono.touched && form.controls.telefono.invalid) { <p class="fz-error">{{ form.controls.telefono.hasError('required') ? 'Obligatorio.' : msg.telefono }}</p> }
         </div>
         <div>
           <label class="fz-label" for="cor">Correo (será su usuario) *</label>
