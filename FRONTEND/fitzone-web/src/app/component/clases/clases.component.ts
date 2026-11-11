@@ -9,6 +9,7 @@ import { Sede } from '../../model/sede';
 import { BuscadorService } from '../../service/buscador';
 import { NotificacionService } from '../../service/notificacion';
 import { mensajeError } from '../../service/util';
+import { paginar } from '../../service/paginacion';
 
 /** Tope razonable de cupos por clase (evita errores de digitación). */
 const CUPO_MAXIMO = 500;
@@ -44,6 +45,8 @@ export class ClasesComponent implements OnInit {
     const t = this.buscador.texto().toLowerCase();
     return this.lista().filter((c) => `${c.nombre} ${c.descripcion ?? ''} ${c.entrenador} ${c.sede}`.toLowerCase().includes(t));
   });
+  /** 15 registros por página (ver <app-paginador> al final de la lista). */
+  readonly pag = paginar(this.visibles);
 
   readonly abierto = signal(false);
   /** Clase en edición; null cuando se crea una nueva. */

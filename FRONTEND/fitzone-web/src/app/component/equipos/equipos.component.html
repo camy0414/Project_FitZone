@@ -1,13 +1,14 @@
 <app-panel titulo="Equipos" descripcion="Inventario de equipos por sede y su último mantenimiento." [cargando]="cargando()">
   <button acciones type="button" class="fz-btn" (click)="nuevo()">Nuevo equipo</button>
   <div class="divide-y divide-black/5">
-    @for (e of visibles(); track e.idEquipo) {
+    @for (e of pag.items(); track e.idEquipo) {
       <app-fila [principal]="e.nombre" [secundario]="e.tipo + ' · adquirido ' + (e.fechaAdquisicion | fecha: true)"
         [meta]="e.sede + ' · ' + (e.ultimoMantenimiento ? 'último mantenimiento ' + (e.ultimoMantenimiento | fecha: true) : 'sin mantenimientos')">
         <button type="button" class="fz-btn-ghost !px-2.5" (click)="editar(e)" [attr.aria-label]="'Editar ' + e.nombre"><app-icon name="pencil" cls="size-4" /></button>
       </app-fila>
     } @empty { <app-vacio /> }
   </div>
+  <app-paginador [pag]="pag" />
 </app-panel>
 
 @if (abierto()) {

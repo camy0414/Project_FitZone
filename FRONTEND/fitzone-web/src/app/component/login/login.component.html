@@ -21,7 +21,14 @@
       <p class="mt-7 max-w-lg text-lg leading-8 text-zinc-300">
         Miembros, pagos, clases, asistencia y equipos en una plataforma diseñada para el personal de FitZone.
       </p>
-
+      <div class="mt-10 flex gap-8">
+        @for (s of [['Sedes', 'toda la cadena en un lugar'], ['Roles', 'acceso según tu cargo'], ['Reportes', 'ingresos y ocupación al día']]; track s[0]) {
+          <div>
+            <p class="text-2xl font-black text-white">{{ s[0] }}</p>
+            <p class="mt-1 text-sm text-zinc-400">{{ s[1] }}</p>
+          </div>
+        }
+      </div>
     </section>
 
     <section class="mx-auto w-full max-w-md">
@@ -31,7 +38,7 @@
             <app-icon name="shield" cls="size-6" />
           </div>
           <h2 class="text-3xl font-black tracking-tight">Bienvenido de vuelta</h2>
-          <p class="mt-2 text-sm leading-6 text-zinc-400">Ingresa con tu usuario y contraseña</p>
+          <p class="mt-2 text-sm leading-6 text-zinc-400">Ingresa con las credenciales asignadas a tu rol.</p>
         </div>
 
         <form [formGroup]="form" (ngSubmit)="entrar()" class="space-y-5">

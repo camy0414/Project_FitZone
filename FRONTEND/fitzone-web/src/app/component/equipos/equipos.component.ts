@@ -9,6 +9,7 @@ import { Sede } from '../../model/sede';
 import { BuscadorService } from '../../service/buscador';
 import { NotificacionService } from '../../service/notificacion';
 import { hoyISO, mensajeError } from '../../service/util';
+import { paginar } from '../../service/paginacion';
 
 /** Fecha mínima aceptada para la compra de un equipo. */
 const FECHA_MINIMA = '1990-01-01';
@@ -39,6 +40,8 @@ export class EquiposComponent implements OnInit {
     const t = this.buscador.texto().toLowerCase();
     return this.lista().filter((e) => `${e.nombre} ${e.tipo} ${e.sede}`.toLowerCase().includes(t));
   });
+  /** 15 registros por página (ver <app-paginador> al final de la lista). */
+  readonly pag = paginar(this.visibles);
 
   readonly abierto = signal(false);
   /** Equipo en edición; null cuando se registra uno nuevo. */

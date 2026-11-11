@@ -35,12 +35,13 @@ import { EquiposComponent } from './component/equipos/equipos.component';
 import { MantenimientoComponent } from './component/mantenimiento/mantenimiento.component';
 import { RutinasComponent } from './component/rutinas/rutinas.component';
 import { ProgresoComponent } from './component/progreso/progreso.component';
-import { AnalisisComponent } from './component/analisis/analisis.component';
 import { AuditoriaComponent } from './component/auditoria/auditoria.component';
 import { ReportesComponent } from './component/reportes/reportes.component';
 import { ReporteIngresosComponent } from './component/reporte-ingresos/reporte-ingresos.component';
 import { ReporteOcupacionComponent } from './component/reporte-ocupacion/reporte-ocupacion.component';
 import { ReportePorVencerComponent } from './component/reporte-por-vencer/reporte-por-vencer.component';
+import { ReporteEjerciciosComponent } from './component/reporte-ejercicios/reporte-ejercicios.component';
+import { ReporteEntrenadoresComponent } from './component/reporte-entrenadores/reporte-entrenadores.component';
 import { ReporteMantenimientosComponent } from './component/reporte-mantenimientos/reporte-mantenimientos.component';
 // Piezas reutilizables
 import { AvatarComponent } from './component/avatar/avatar.component';
@@ -53,6 +54,7 @@ import { ModalComponent } from './component/modal/modal.component';
 import { PanelComponent } from './component/panel/panel.component';
 import { StatusPillComponent } from './component/status-pill/status-pill.component';
 import { ToastsComponent } from './component/toasts/toasts.component';
+import { PaginadorComponent } from './component/paginador/paginador.component';
 import { VacioComponent } from './component/vacio/vacio.component';
 // Pipes
 import { CopPipe } from './pipe/cop.pipe';
@@ -71,11 +73,12 @@ import { TokenInterceptor } from './service/token.interceptor';
     MiembrosComponent, MiembroFormComponent, MiembroDetalleComponent, MembresiasComponent, PagosComponent,
     ClasesComponent, SesionesComponent, InscripcionesComponent, AsistenciaComponent,
     EquiposComponent, MantenimientoComponent,
-    RutinasComponent, ProgresoComponent, AnalisisComponent,
+    RutinasComponent, ProgresoComponent,
     ReportesComponent, ReporteIngresosComponent, ReporteOcupacionComponent, ReportePorVencerComponent, ReporteMantenimientosComponent,
+    ReporteEjerciciosComponent, ReporteEntrenadoresComponent,
     AuditoriaComponent,
     AvatarComponent, BarraComponent, ConfirmarComponent, FilaComponent, IconComponent, IndicadorComponent,
-    ModalComponent, PanelComponent, StatusPillComponent, ToastsComponent, VacioComponent,
+    ModalComponent, PaginadorComponent, PanelComponent, StatusPillComponent, ToastsComponent, VacioComponent,
     CopPipe, FechaPipe,
   ],
   imports: [

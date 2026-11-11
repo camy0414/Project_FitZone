@@ -1,10 +1,11 @@
 <app-panel titulo="Membresías" descripcion="Planes de los miembros, su vigencia y estado." [cargando]="cargando()">
   @if (puedeRenovar()) { <button acciones type="button" class="fz-btn" (click)="nueva()">Renovar / asignar membresía</button> }
   <div class="divide-y divide-black/5">
-    @for (m of visibles(); track m.idMembresia) {
+    @for (m of pag.items(); track m.idMembresia) {
       <app-fila [principal]="m.miembro" [secundario]="'Plan ' + m.plan" [meta]="(m.fechaInicio | fecha) + ' → ' + (m.fechaFin | fecha)" [estado]="m.estado" />
     } @empty { <app-vacio /> }
   </div>
+  <app-paginador [pag]="pag" />
 </app-panel>
 
 @if (abierto()) {

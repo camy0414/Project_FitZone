@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { tap } from 'rxjs';
+import { map, tap } from 'rxjs';
 import { EdicionProgreso, NuevoProgreso } from '../model/progreso';
 import { HttpDataService } from './http-data.service';
 import { MockDataService } from './mock-data.service';
+import { calcularAnalisis } from './analisis-rutinas';
 
 @Injectable()
 export class HibridoDataService extends HttpDataService {
@@ -17,5 +18,6 @@ export class HibridoDataService extends HttpDataService {
   override crearProgreso(d: NuevoProgreso) { return this.ejemplo.crearProgreso(d); }
   override editarProgreso(id: string, d: EdicionProgreso) { return this.ejemplo.editarProgreso(id, d); }
   override eliminarProgreso(id: string) { return this.ejemplo.eliminarProgreso(id); }
-  override analisisMongo() { return this.ejemplo.analisisMongo(); }
+  // Reportes de rutinas: mientras no exista GET /rutina/analisis se calculan con las rutinas reales
+  override analisisMongo() { return this.rutinas().pipe(map(calcularAnalisis)); }
 }

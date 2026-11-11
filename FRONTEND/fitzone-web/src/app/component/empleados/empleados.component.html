@@ -1,7 +1,7 @@
 <app-panel [titulo]="esAdmin() ? 'Empleados' : 'Personal'" descripcion="Personal con acceso al sistema, su rol y su sede." [cargando]="cargando()">
   @if (esAdmin()) { <button acciones type="button" class="fz-btn" (click)="nuevo()">Nuevo empleado</button> }
   <div class="divide-y divide-black/5">
-    @for (e of visibles(); track e.idEmpleado) {
+    @for (e of pag.items(); track e.idEmpleado) {
       <app-fila [principal]="e.nombreCompleto" [secundario]="e.correo" [meta]="rolLabel(e.rol) + ' · ' + e.sede" [estado]="e.activo ? 'activo' : 'inactivo'">
         @if (esAdmin()) {
           <div class="flex gap-2">
@@ -12,6 +12,7 @@
       </app-fila>
     } @empty { <app-vacio /> }
   </div>
+  <app-paginador [pag]="pag" />
 </app-panel>
 
 @if (abierto()) {

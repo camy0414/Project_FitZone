@@ -4,6 +4,7 @@ import { DataService } from '../../service/data.service';
 import { Miembro } from '../../model/miembro';
 import { BuscadorService } from '../../service/buscador';
 import { NotificacionService } from '../../service/notificacion';
+import { paginar } from '../../service/paginacion';
 
 @Component({
   selector: 'app-miembros',
@@ -25,6 +26,8 @@ export class MiembrosComponent implements OnInit {
     const t = this.buscador.texto().toLowerCase();
     return this.lista().filter((m) => `${m.nombreCompleto} ${m.correo} ${m.sede} ${m.planActual ?? ''}`.toLowerCase().includes(t));
   });
+  /** 15 registros por página (ver <app-paginador> al final de la lista). */
+  readonly pag = paginar(this.visibles);
   readonly abierto = signal(false);
 
   ngOnInit() {

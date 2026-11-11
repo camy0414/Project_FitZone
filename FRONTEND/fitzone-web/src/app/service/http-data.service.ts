@@ -173,5 +173,5 @@ export class HttpDataService extends DataService {
   crearProgreso(d: NuevoProgreso) { return this.post('/progreso', d); }
   editarProgreso(id: string, d: EdicionProgreso) { return this.put(`/progreso/${id}`, d); }
   eliminarProgreso(id: string) { return this.delete(`/progreso/${id}`); }
-  analisisMongo() { return this.get<AnalisisMongo>('/rutinas/analisis'); }
+  analisisMongo() { return this.get<AnalisisMongo>('/rutina/analisis'); }
 }

@@ -4,8 +4,9 @@
     <p class="text-sm font-black">{{ total() | cop }}</p>
   </div>
   <div class="divide-y divide-black/5">
-    @for (p of visibles(); track p.idPago) {
+    @for (p of pag.items(); track p.idPago) {
       <app-fila [principal]="p.miembro" [secundario]="'Pago n.º ' + p.idPago + ' · ' + p.metodo" [meta]="(p.monto | cop) + ' · ' + (p.fechaPago | fecha)" />
     } @empty { <app-vacio /> }
   </div>
+  <app-paginador [pag]="pag" />
 </app-panel>

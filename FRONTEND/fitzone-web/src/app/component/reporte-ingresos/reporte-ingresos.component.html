@@ -24,7 +24,7 @@
         </tr>
       </thead>
       <tbody class="divide-y divide-black/5">
-        @for (f of filas(); track f.idSede + f.metodo) {
+        @for (f of pag.items(); track f.idSede + f.metodo) {
           <tr>
             <td class="px-6 py-3 font-bold">{{ f.sede }}</td>
             <td class="px-6 py-3 capitalize text-zinc-600">{{ f.metodo }}</td>
@@ -36,6 +36,7 @@
       </tbody>
     </table>
   </div>
+  <app-paginador [pag]="pag" />
 } @else {
   <app-vacio mensaje="No hay pagos en el rango elegido." detalle="Amplía las fechas o cambia la sede." />
 }

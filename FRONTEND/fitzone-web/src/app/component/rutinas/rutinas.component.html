@@ -1,7 +1,7 @@
 <app-panel [titulo]="esEntrenador() ? 'Rutinas de mis miembros' : 'Rutinas'" descripcion="Rutinas de entrenamiento de los miembros, con sus ejercicios." [cargando]="cargando()">
   @if (esEntrenador()) { <button acciones type="button" class="fz-btn" (click)="nueva()">Nueva rutina</button> }
   <div class="divide-y divide-black/5">
-    @for (r of visibles(); track r.idRutina) {
+    @for (r of pag.items(); track r.idRutina) {
       <div class="px-6 py-4">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div class="min-w-0 flex-1">
@@ -27,7 +27,13 @@
                   <span class="font-bold">{{ e.nombre }}</span>
                   <span class="text-zinc-500">{{ detalle(e) }}</span>
                   @if (e.notas) { <span class="text-xs text-zinc-400">— {{ e.notas }}</span> }
-                  @if (e.videoUrl) { <a class="text-xs font-bold text-orange-600 underline" [href]="e.videoUrl" target="_blank" rel="noopener">Ver video</a> }
+                  @if (e.videoUrl) {
+                    @if (esYoutube(e)) {
+                      <button type="button" class="text-xs font-bold text-orange-600 underline" (click)="verVideo(e)">Ver video</button>
+                    } @else {
+                      <a class="text-xs font-bold text-orange-600 underline" [href]="e.videoUrl" target="_blank" rel="noopener">Ver video</a>
+                    }
+                  }
                 </li>
               }
             </ul>
@@ -37,7 +43,16 @@
       </div>
     } @empty { <app-vacio /> }
   </div>
+  <app-paginador [pag]="pag" />
 </app-panel>
+
+@if (video(); as v) {
+  <app-modal [titulo]="v.titulo" (cerrar)="video.set(null)">
+    <div class="aspect-video overflow-hidden rounded-2xl bg-black">
+      <iframe class="size-full" [src]="v.url" [title]="'Video: ' + v.titulo" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+    </div>
+  </app-modal>
+}
 
 @if (abierto()) {
   <app-modal [titulo]="editando() ? 'Editar rutina' : 'Nueva rutina'" (cerrar)="abierto.set(false)">
@@ -97,7 +112,7 @@
                   }
                 }
                 <input class="fz-input col-span-2" formControlName="notas" maxlength="200" placeholder="Notas" aria-label="Notas" />
-                <input type="url" class="fz-input col-span-2" formControlName="videoUrl" placeholder="Enlace a video (opcional)" aria-label="Enlace a video" />
+                <input type="url" class="fz-input col-span-2" formControlName="videoUrl" placeholder="Enlace a video de YouTube (opcional)" aria-label="Enlace a video" />
               </div>
             </div>
           }

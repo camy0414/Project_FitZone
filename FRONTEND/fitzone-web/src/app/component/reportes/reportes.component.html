@@ -11,6 +11,11 @@
   </div>
 
   <!-- Filtros -->
+  @if (actual().sinFechas) {
+    <p class="border-b border-black/5 px-6 py-4 text-xs font-bold text-zinc-500">
+      Rutinas registradas hoy{{ esAdmin() ? ' en todas las sedes' : ' en ' + usuario()?.sede }}.
+    </p>
+  } @else {
   <div class="flex flex-col gap-3 border-b border-black/5 px-6 py-4 sm:flex-row sm:flex-wrap sm:items-end">
     @if (pestana() === 'vencer') {
       <div class="sm:w-44">
@@ -45,6 +50,7 @@
     }
     @if (!rangoValido()) { <p class="fz-error sm:pb-3">{{ desde() && hasta() ? 'La fecha inicial debe ser anterior a la final.' : 'Elige las dos fechas.' }}</p> }
   </div>
+  }
 
   @if (cargando()) {
     <p class="px-6 py-16 text-center text-sm font-semibold text-zinc-400">Consultando…</p>
@@ -54,6 +60,8 @@
       @case ('ocupacion') { <app-reporte-ocupacion [filas]="ocupacion()" /> }
       @case ('vencer') { <app-reporte-por-vencer [filas]="porVencer()" /> }
       @case ('mantenimiento') { <app-reporte-mantenimientos [filas]="mantenimientos()" /> }
+      @case ('ejercicios') { <app-reporte-ejercicios [filas]="ejercicios()" /> }
+      @case ('entrenadores') { <app-reporte-entrenadores [filas]="rutinasEntrenador()" /> }
     }
   }
 </app-panel>

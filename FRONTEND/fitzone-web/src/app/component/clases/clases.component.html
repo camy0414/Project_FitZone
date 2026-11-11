@@ -1,12 +1,13 @@
 <app-panel [titulo]="esEntrenador() ? 'Mis clases' : 'Clases'" descripcion="Clases que ofrece el gimnasio, su cupo máximo y su entrenador." [cargando]="cargando()">
   @if (puedeCrear()) { <button acciones type="button" class="fz-btn" (click)="nueva()">Nueva clase</button> }
   <div class="divide-y divide-black/5">
-    @for (c of visibles(); track c.idClase) {
+    @for (c of pag.items(); track c.idClase) {
       <app-fila [principal]="c.nombre" [secundario]="c.descripcion || 'Sin descripción'" [meta]="c.entrenador + ' · ' + c.sede + ' · cupo ' + c.cupoMaximo">
         @if (puedeCrear()) { <button type="button" class="fz-btn-ghost !px-2.5" (click)="editar(c)" [attr.aria-label]="'Editar ' + c.nombre"><app-icon name="pencil" cls="size-4" /></button> }
       </app-fila>
     } @empty { <app-vacio /> }
   </div>
+  <app-paginador [pag]="pag" />
 </app-panel>
 
 @if (abierto()) {

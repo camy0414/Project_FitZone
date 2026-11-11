@@ -9,6 +9,7 @@ import { NotificacionService } from '../../service/notificacion';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { aMinutos, DURACION_MAX_SESION_MIN, requerido, sesionIniciada, textoDuracion, validarHorarioSesion } from '../../service/validaciones';
 import { hoyISO, mensajeError, porFechaHora, isoDesplazada } from '../../service/util';
+import { paginar } from '../../service/paginacion';
 
 @Component({
   selector: 'app-sesiones',
@@ -37,6 +38,8 @@ export class SesionesComponent implements OnInit {
     const t = this.buscador.texto().toLowerCase();
     return this.lista().filter((s) => `${s.clase} ${s.entrenador} ${s.sede} ${s.fecha}`.toLowerCase().includes(t));
   });
+  /** 15 registros por página (ver <app-paginador> al final de la lista). */
+  readonly pag = paginar(this.visibles);
 
   readonly abierto = signal(false);
   readonly enviando = signal(false);
@@ -65,7 +68,14 @@ export class SesionesComponent implements OnInit {
   }
   cargar() {
     this.data.sesiones().subscribe({
-      next: (l) => { this.lista.set(porFechaHora(l)); this.cargando.set(false); },
+      next: (l) => {
+        const ordenadas = porFechaHora(l);
+        this.lista.set(ordenadas);
+        // abre en la página de las sesiones de hoy en adelante (las anteriores quedan en las páginas previas)
+        const hoy = ordenadas.findIndex((s) => s.fecha >= hoyISO());
+        this.pag.irA(hoy < 0 ? this.pag.totalPaginas() - 1 : Math.floor(hoy / this.pag.porPagina));
+        this.cargando.set(false);
+      },
       error: () => this.cargando.set(false),
     });
   }

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { ReporteOcupacion } from '../../model/reporte';
 import { hoyISO } from '../../service/util';
+import { paginar } from '../../service/paginacion';
 
 /** Ocupación (inscritos / cupo) y asistencia (asistentes / inscritos) por sesión. */
 @Component({
@@ -12,6 +13,7 @@ import { hoyISO } from '../../service/util';
 })
 export class ReporteOcupacionComponent {
   readonly filas = input.required<ReporteOcupacion[]>();
+  readonly pag = paginar(this.filas);
   readonly hoy = hoyISO();
 
   readonly ocupacion = computed(() => {

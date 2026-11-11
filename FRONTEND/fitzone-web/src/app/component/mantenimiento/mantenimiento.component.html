@@ -5,10 +5,11 @@
   </div>
   <button acciones type="button" class="fz-btn" (click)="nuevo()">Nuevo mantenimiento</button>
   <div class="divide-y divide-black/5">
-    @for (m of visibles(); track m.numeroMantenimiento) {
+    @for (m of pag.items(); track m.numeroMantenimiento) {
       <app-fila [principal]="m.equipo" [secundario]="m.descripcion || 'Sin descripción'" [meta]="m.sede + ' · ' + (m.costo | cop) + ' · ' + (m.fechaMantenimiento | fecha: true)" />
     } @empty { <app-vacio /> }
   </div>
+  <app-paginador [pag]="pag" />
 </app-panel>
 
 @if (abierto()) {

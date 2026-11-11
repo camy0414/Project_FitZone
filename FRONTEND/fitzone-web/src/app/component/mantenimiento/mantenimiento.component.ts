@@ -6,6 +6,7 @@ import { Equipo, Mantenimiento } from '../../model/equipo';
 import { BuscadorService } from '../../service/buscador';
 import { NotificacionService } from '../../service/notificacion';
 import { hoyISO, mensajeError } from '../../service/util';
+import { paginar } from '../../service/paginacion';
 
 @Component({
   selector: 'app-mantenimiento',
@@ -33,6 +34,8 @@ export class MantenimientoComponent implements OnInit {
     const t = this.buscador.texto().toLowerCase();
     return this.lista().filter((m) => `${m.equipo} ${m.sede} ${m.descripcion ?? ''}`.toLowerCase().includes(t));
   });
+  /** 15 registros por página (ver <app-paginador> al final de la lista). */
+  readonly pag = paginar(this.visibles);
   readonly total = computed(() => this.visibles().reduce((a, m) => a + m.costo, 0));
 
   readonly abierto = signal(false);

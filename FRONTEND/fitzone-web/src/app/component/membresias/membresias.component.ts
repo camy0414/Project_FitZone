@@ -9,6 +9,7 @@ import { BuscadorService } from '../../service/buscador';
 import { NotificacionService } from '../../service/notificacion';
 import { mensajeError } from '../../service/util';
 import { MONTO_MAXIMO, requerido } from '../../service/validaciones';
+import { paginar } from '../../service/paginacion';
 
 @Component({
   selector: 'app-membresias',
@@ -34,6 +35,8 @@ export class MembresiasComponent implements OnInit {
     const t = this.buscador.texto().toLowerCase();
     return this.lista().filter((m) => `${m.miembro} ${m.plan} ${m.estado}`.toLowerCase().includes(t));
   });
+  /** 15 registros por página (ver <app-paginador> al final de la lista). */
+  readonly pag = paginar(this.visibles);
 
   readonly abierto = signal(false);
   readonly enviando = signal(false);

@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormArray, FormBuilder, Validators } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { requerido } from '../../service/validaciones';
 import { AuthService } from '../../service/auth';
 import { DataService } from '../../service/data.service';
@@ -8,6 +9,8 @@ import { Ejercicio, Rutina, TipoEjercicio } from '../../model/rutina';
 import { BuscadorService } from '../../service/buscador';
 import { NotificacionService } from '../../service/notificacion';
 import { mensajeError } from '../../service/util';
+import { paginar } from '../../service/paginacion';
+import { enlaceReproductor, idYoutube } from '../../service/video';
 
 /** Número entero mayor o igual a 1. */
 const positivo = (x?: number) => x !== undefined && Number.isInteger(x) && x >= 1;
@@ -42,6 +45,7 @@ export class RutinasComponent implements OnInit {
   private toast = inject(NotificacionService);
   private fb = inject(FormBuilder);
   private buscador = inject(BuscadorService);
+  private sanitizer = inject(DomSanitizer);
   readonly usuario = inject(AuthService).usuario;
 
   readonly esEntrenador = computed(() => this.usuario()?.rol === 'ENTRENADOR_SEDE');
@@ -54,6 +58,11 @@ export class RutinasComponent implements OnInit {
     const t = this.buscador.texto().toLowerCase();
     return this.lista().filter((r) => `${r.nombreRutina} ${r.miembro} ${r.entrenador} ${r.objetivo}`.toLowerCase().includes(t));
   });
+  /** 15 registros por página (ver <app-paginador> al final de la lista). */
+  readonly pag = paginar(this.visibles);
+
+  /** Video de YouTube que se está reproduciendo en la ventana; null si no hay ninguno. */
+  readonly video = signal<{ titulo: string; url: SafeResourceUrl } | null>(null);
 
   readonly abierto = signal(false);
   /** Rutina en edición; null cuando el formulario crea una nueva. */
@@ -90,6 +99,15 @@ export class RutinasComponent implements OnInit {
     if (e.tipo === 'cardio') return `${e.duracionMin} min${e.distanciaKm ? ' · ' + e.distanciaKm + ' km' : ''}`;
     return `${e.series} × ${e.duracionSeg} s`;
   }
+  /** true si el enlace es de YouTube: se reproduce dentro de la app. */
+  esYoutube(e: Ejercicio): boolean { return idYoutube(e.videoUrl) !== null; }
+  verVideo(e: Ejercicio) {
+    const id = idYoutube(e.videoUrl);
+    if (!id) return;
+    // la dirección se arma solo con el código del video (11 caracteres revisados), por eso es segura
+    this.video.set({ titulo: e.nombre, url: this.sanitizer.bypassSecurityTrustResourceUrl(enlaceReproductor(id)) });
+  }
+
   /** Solo el entrenador que creó la rutina la modifica (el documento guarda su idEmpleado). */
   puedeModificar(r: Rutina): boolean {
     const u = this.usuario();

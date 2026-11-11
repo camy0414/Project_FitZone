@@ -10,6 +10,7 @@ import { ROL_LABEL, RolNombre } from '../../model/usuario';
 import { BuscadorService } from '../../service/buscador';
 import { NotificacionService } from '../../service/notificacion';
 import { mensajeError } from '../../service/util';
+import { paginar } from '../../service/paginacion';
 
 @Component({
   selector: 'app-empleados',
@@ -37,6 +38,8 @@ export class EmpleadosComponent implements OnInit {
     const t = this.buscador.texto().toLowerCase();
     return this.lista().filter((e) => `${e.nombreCompleto} ${e.correo} ${e.rol} ${e.sede}`.toLowerCase().includes(t));
   });
+  /** 15 registros por página (ver <app-paginador> al final de la lista). */
+  readonly pag = paginar(this.visibles);
 
   readonly abierto = signal(false);
   /** Empleado en edición; null cuando se crea uno nuevo (la contraseña solo se fija al crear). */

@@ -1,36 +1,14 @@
-// Análisis de rutinas y progreso (resultados de las agregaciones de MongoDB).
+// Reportes de rutinas (resultados de las agregaciones de MongoDB sobre la colección de rutinas).
 import { TipoEjercicio } from './rutina';
 
-/** $sort por fecha + $group por miembro con $first / $last. */
-export interface TendenciaMiembro {
-  idMiembro: number;
-  miembro: string;
-  sede: string;
-  mediciones: number;
-  pesoInicial: number;
-  pesoActual: number;
-  variacionKg: number;
-  grasaInicial: number | null;
-  grasaActual: number | null;
-}
-
-/** Último registro de cada miembro, agrupado por sede con $avg. */
-export interface PromedioSede {
-  idSede: number;
-  sede: string;
-  miembros: number;
-  pesoPromedio: number;
-  grasaPromedio: number | null;
-}
-
-/** $unwind de ejercicios en rutinas activas + $group por nombre. */
+/** $match activa + $unwind de ejercicios + $group por nombre: en cuántas rutinas activas aparece cada ejercicio. */
 export interface EjercicioFrecuente {
   nombre: string;
   tipo: TipoEjercicio;
   rutinas: number;
 }
 
-/** $group por entrenador: rutinas activas e inactivas. */
+/** $group por entrenador con $sum condicional: rutinas activas e inactivas de cada uno. */
 export interface RutinasEntrenador {
   idEmpleado: number;
   entrenador: string;
@@ -38,9 +16,8 @@ export interface RutinasEntrenador {
   inactivas: number;
 }
 
+/** Respuesta de GET /rutina/analisis (filtrada por la sede del token; el administrador ve todas). */
 export interface AnalisisMongo {
-  tendencias: TendenciaMiembro[];
-  promediosSede: PromedioSede[];
   ejercicios: EjercicioFrecuente[];
   rutinasEntrenador: RutinasEntrenador[];
 }
