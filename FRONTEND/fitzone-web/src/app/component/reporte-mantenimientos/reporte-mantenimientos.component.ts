@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { ReporteMantenimiento } from '../../model/reporte';
+import { paginar } from '../../service/paginacion';
 
 /** Costo de mantenimiento por sede y tipo de equipo. */
 @Component({
@@ -11,6 +12,7 @@ import { ReporteMantenimiento } from '../../model/reporte';
 })
 export class ReporteMantenimientosComponent {
   readonly filas = input.required<ReporteMantenimiento[]>();
+  readonly pag = paginar(this.filas);
 
   readonly costo = computed(() => this.filas().reduce((a, f) => a + f.costoTotal, 0));
   readonly cantidad = computed(() => this.filas().reduce((a, f) => a + f.numMantenimientos, 0));

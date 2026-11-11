@@ -22,7 +22,7 @@
         Miembros, pagos, clases, asistencia y equipos en una plataforma diseñada para el personal de FitZone.
       </p>
       <div class="mt-10 flex gap-8">
-        @for (s of [['3', 'sedes conectadas'], ['4', 'roles de acceso'], ['2', 'bases de datos']]; track s[1]) {
+        @for (s of [['Sedes', 'toda la cadena en un lugar'], ['Roles', 'acceso según tu cargo'], ['Reportes', 'ingresos y ocupación al día']]; track s[0]) {
           <div>
             <p class="text-2xl font-black text-white">{{ s[0] }}</p>
             <p class="mt-1 text-sm text-zinc-400">{{ s[1] }}</p>
@@ -76,7 +76,7 @@
         @if (demo.length) {
           <div class="mt-6 rounded-xl border border-orange-500/20 bg-orange-500/5 px-4 py-3">
             <p class="mb-2 text-xs font-bold text-orange-400">
-              {{ loginReal ? 'Acceso rápido: toca un rol para llenar el correo y escribe la contraseña' : 'Modo demostración: toca un rol para llenar el formulario' }}
+              Modo demostración: toca un rol para llenar el formulario
             </p>
             <div class="flex flex-wrap gap-2">
               @for (d of demo; track d[0]) {

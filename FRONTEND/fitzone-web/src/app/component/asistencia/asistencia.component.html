@@ -7,7 +7,7 @@
         <option [ngValue]="s.numeroSesion">{{ s.clase }} · {{ s.fecha | fecha }} {{ s.horaInicio }} · {{ s.sede }}</option>
       }
     </select>
-    @if (sesion()) { <p class="mt-2 text-xs font-bold text-zinc-500">{{ presentes() }} de {{ inscritos().length }} asistieron · {{ pendientes() }} sin registrar</p> }
+    @if (sesion()) { <p class="mt-2 text-xs font-bold text-zinc-500">{{ presentes() }} de {{ inscritos().length }} asistieron</p> }
   </div>
   @if (sesion()) {
     <div class="divide-y divide-black/5">
@@ -21,6 +21,6 @@
       } @empty { <app-vacio mensaje="Esta sesión no tiene inscritos." detalle="" /> }
     </div>
   } @else {
-    <app-vacio mensaje="Selecciona una sesión." detalle="Verás aquí la lista para marcar asistencia." />
+    <app-vacio mensaje="Selecciona una sesión." detalle="Aparecen las sesiones que ya empezaron; ahí puedes marcar la asistencia." />
   }
 </app-panel>

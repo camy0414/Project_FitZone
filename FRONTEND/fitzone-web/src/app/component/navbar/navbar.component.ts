@@ -22,6 +22,9 @@ export class NavbarComponent {
     return !u ? '' : u.rol === 'ADMIN_SISTEMA' ? 'Todas las sedes' : u.sede;
   });
 
+  /** Fecha de hoy, por ejemplo «martes, 11 de noviembre». */
+  readonly hoy = new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
+
   buscar(e: Event) {
     this.buscador.texto.set((e.target as HTMLInputElement).value);
   }

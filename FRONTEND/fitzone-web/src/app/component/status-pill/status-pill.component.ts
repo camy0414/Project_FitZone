@@ -3,8 +3,8 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 type Tono = 'ok' | 'info' | 'warn' | 'bad';
 
 const TONOS: Record<string, Tono> = {
-  activa: 'ok', activo: 'ok', 'asistió': 'ok', completado: 'ok',
-  programada: 'info', inscrito: 'info', pendiente: 'info',
+  activa: 'ok', activo: 'ok', 'asistió': 'ok', completado: 'ok', realizada: 'ok',
+  programada: 'info', inscrito: 'info', pendiente: 'info', 'en curso': 'info',
   llena: 'warn', 'sin membresía': 'warn',
 };
 const CLASES: Record<Tono, string> = {

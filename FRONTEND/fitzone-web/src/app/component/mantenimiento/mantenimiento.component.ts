@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { DataService } from '../../service/data.service';
-import { LIMITES } from '../../service/validaciones';
+import { fechaDesde, fechaHasta, LIMITES, MONTO_MAXIMO, requerido } from '../../service/validaciones';
 import { Equipo, Mantenimiento } from '../../model/equipo';
 import { BuscadorService } from '../../service/buscador';
 import { NotificacionService } from '../../service/notificacion';
 import { hoyISO, mensajeError } from '../../service/util';
+import { paginar } from '../../service/paginacion';
 
 @Component({
   selector: 'app-mantenimiento',
@@ -25,10 +26,16 @@ export class MantenimientoComponent implements OnInit {
   readonly equipos = signal<Equipo[]>([]);
   readonly hoy = hoyISO();
   readonly max = LIMITES.mantenimiento;
+  readonly montoMaximo = MONTO_MAXIMO;
+  /** Fecha de compra del equipo elegido: el mantenimiento no puede ser anterior. */
+  readonly compraEquipo = (): string =>
+    this.equipos().find((e) => e.idEquipo === +this.form?.controls.idEquipo.value)?.fechaAdquisicion ?? '';
   readonly visibles = computed(() => {
     const t = this.buscador.texto().toLowerCase();
     return this.lista().filter((m) => `${m.equipo} ${m.sede} ${m.descripcion ?? ''}`.toLowerCase().includes(t));
   });
+  /** 15 registros por página (ver <app-paginador> al final de la lista). */
+  readonly pag = paginar(this.visibles);
   readonly total = computed(() => this.visibles().reduce((a, m) => a + m.costo, 0));
 
   readonly abierto = signal(false);
@@ -36,9 +43,10 @@ export class MantenimientoComponent implements OnInit {
   readonly error = signal('');
   readonly form = this.fb.nonNullable.group({
     idEquipo: [0, Validators.min(1)],
-    costo: [0, [Validators.required, Validators.min(0)]],
+    costo: [0, [requerido, Validators.min(0), Validators.max(MONTO_MAXIMO)]],
     descripcion: ['', Validators.maxLength(LIMITES.mantenimiento.descripcion)],
-    fechaMantenimiento: [hoyISO(), Validators.required],
+    // no puede ser futura ni anterior a la compra del equipo (mismas reglas del trigger)
+    fechaMantenimiento: [hoyISO(), [requerido, fechaHasta(hoyISO), fechaDesde(() => this.compraEquipo())]],
   });
 
   ngOnInit() {
@@ -47,12 +55,17 @@ export class MantenimientoComponent implements OnInit {
     this.data.equipos().subscribe((l) => this.equipos.set(l));
   }
   cargar() {
-    this.data.mantenimientos().subscribe((l) => {
-      this.lista.set([...l].sort((a, b) => b.fechaMantenimiento.localeCompare(a.fechaMantenimiento)));
-      this.cargando.set(false);
+    this.data.mantenimientos().subscribe({
+      next: (l) => {
+        this.lista.set([...l].sort((a, b) => b.fechaMantenimiento.localeCompare(a.fechaMantenimiento)));
+        this.cargando.set(false);
+      },
+      error: () => this.cargando.set(false),
     });
   }
   nuevo() { this.form.reset({ idEquipo: 0, costo: 0, descripcion: '', fechaMantenimiento: hoyISO() }); this.error.set(''); this.abierto.set(true); }
+  /** Al cambiar de equipo se vuelve a revisar la fecha contra su fecha de compra. */
+  alCambiarEquipo() { this.form.controls.fechaMantenimiento.updateValueAndValidity(); }
   guardar() {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.enviando.set(true); this.error.set('');

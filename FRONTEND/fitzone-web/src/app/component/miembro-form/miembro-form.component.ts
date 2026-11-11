@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, ou
 import { FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from '../../service/auth';
 import { DataService } from '../../service/data.service';
-import { LIMITES, MENSAJE_FORMATO, PATRONES, TIPOS_SANGRE } from '../../service/validaciones';
+import { LIMITES, MENSAJE_FORMATO, PATRONES, requerido, TIPOS_SANGRE } from '../../service/validaciones';
 import { InfoMedica, Miembro, NuevoMiembro } from '../../model/miembro';
 import { Sede } from '../../model/sede';
 import { mensajeError } from '../../service/util';
@@ -40,12 +40,12 @@ export class MiembroFormComponent implements OnInit {
   readonly error = signal('');
 
   readonly form = this.fb.nonNullable.group({
-    primerNombre: ['', [Validators.required, Validators.maxLength(LIMITES.persona.nombre), Validators.pattern(PATRONES.nombre)]],
+    primerNombre: ['', [requerido, Validators.maxLength(LIMITES.persona.nombre), Validators.pattern(PATRONES.nombre)]],
     segundoNombre: ['', [Validators.maxLength(LIMITES.persona.nombre), Validators.pattern(PATRONES.nombre)]],
-    primerApellido: ['', [Validators.required, Validators.maxLength(LIMITES.persona.apellido), Validators.pattern(PATRONES.nombre)]],
+    primerApellido: ['', [requerido, Validators.maxLength(LIMITES.persona.apellido), Validators.pattern(PATRONES.nombre)]],
     segundoApellido: ['', [Validators.maxLength(LIMITES.persona.apellido), Validators.pattern(PATRONES.nombre)]],
-    telefono: ['', [Validators.required, Validators.maxLength(LIMITES.persona.telefono), Validators.pattern(PATRONES.telefono)]],
-    correo: ['', [Validators.required, Validators.maxLength(LIMITES.persona.correo), Validators.pattern(PATRONES.correo)]],
+    telefono: ['', [requerido, Validators.maxLength(LIMITES.persona.telefono), Validators.pattern(PATRONES.telefono)]],
+    correo: ['', [requerido, Validators.maxLength(LIMITES.persona.correo), Validators.pattern(PATRONES.correo)]],
     idSede: [0, Validators.min(1)],
     contactoEmergencia: ['', [Validators.maxLength(LIMITES.infoMedica.contactoEmergencia), Validators.pattern(PATRONES.telefono)]],
     tipoSangre: [''],
@@ -72,9 +72,9 @@ export class MiembroFormComponent implements OnInit {
     const c = this.form.controls;
     // sin info médica los campos se ocultan, así que no se validan
     c.contactoEmergencia.setValidators(on
-      ? [Validators.required, Validators.maxLength(LIMITES.infoMedica.contactoEmergencia), Validators.pattern(PATRONES.telefono)]
+      ? [requerido, Validators.maxLength(LIMITES.infoMedica.contactoEmergencia), Validators.pattern(PATRONES.telefono)]
       : null);
-    c.tipoSangre.setValidators(on ? Validators.required : null);
+    c.tipoSangre.setValidators(on ? requerido : null);
     c.contactoEmergencia.updateValueAndValidity();
     c.tipoSangre.updateValueAndValidity();
   }

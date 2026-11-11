@@ -1,7 +1,7 @@
-// MongoDB: colección rutinas.
+//colección rutinas.
 export type TipoEjercicio = 'fuerza' | 'cardio' | 'movilidad';
 
-/** Ejercicio polimórfico: los campos obligatorios dependen del tipo. */
+/** Polimórfico*/
 export interface Ejercicio {
   nombre: string;
   tipo: TipoEjercicio;
@@ -11,6 +11,7 @@ export interface Ejercicio {
   duracionMin?: number;
   duracionSeg?: number;
   distanciaKm?: number;
+  videoUrl?: string;
   notas?: string;
 }
 

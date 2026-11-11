@@ -2,7 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, delay, of, throwError } from 'rxjs';
 import { DataService } from './data.service';
 import { Auditoria } from '../model/auditoria';
-import { AnalisisMongo, EjercicioFrecuente, PromedioSede, RutinasEntrenador, TendenciaMiembro } from '../model/analisis';
+import { AnalisisMongo } from '../model/analisis';
+import { calcularAnalisis } from './analisis-rutinas';
 import { Clase, EdicionClase, NuevaClase } from '../model/clase';
 import { EdicionEmpleado, Empleado, NuevoEmpleado } from '../model/empleado';
 import { EdicionEquipo, NuevoEquipo, NuevoMantenimiento } from '../model/equipo';
@@ -29,7 +30,6 @@ const persona = (x: { primerNombre: string; segundoNombre?: string; primerApelli
   primerNombre: x.primerNombre.trim(), segundoNombre: limpio(x.segundoNombre),
   primerApellido: x.primerApellido.trim(), segundoApellido: limpio(x.segundoApellido),
 });
-const redondear = (n: number, dec = 1) => Math.round(n * 10 ** dec) / 10 ** dec;
 
 /**
  * Implementación en memoria para el modo visual (environment.useMock = true).
@@ -602,64 +602,9 @@ export class MockDataService extends DataService {
     return this.ok('OK: medición eliminada.');
   }
 
-  // ---------- MongoDB: agregaciones ----------
-  /** Simula en memoria los pipelines documentados en component/analisis/pipelines.ts. */
+  // ---------- MongoDB: agregaciones (pestañas de rutinas en Reportes) ----------
   analisisMongo(): Observable<AnalisisMongo> {
-    const progresos = this.porSede(this.lProgresos);
-    const rutinas = this.porSede(this.lRutinas);
-    const sedeDe = (id: number) => this.lSedes.find((s) => s.idSede === id)!.nombre;
-
-    // 1) $sort fecha + $group por miembro con $first / $last
-    const porMiembro = new Map<number, typeof progresos>();
-    for (const p of [...progresos].sort((a, b) => a.fecha.localeCompare(b.fecha))) {
-      porMiembro.set(p.idMiembro, [...(porMiembro.get(p.idMiembro) ?? []), p]);
-    }
-    const tendencias: TendenciaMiembro[] = [...porMiembro.values()].map((l) => {
-      const ini = l[0], fin = l[l.length - 1];
-      return {
-        idMiembro: ini.idMiembro, miembro: ini.miembro, sede: sedeDe(ini.idSede), mediciones: l.length,
-        pesoInicial: ini.pesoKg, pesoActual: fin.pesoKg, variacionKg: redondear(fin.pesoKg - ini.pesoKg),
-        grasaInicial: ini.grasaPct ?? null, grasaActual: fin.grasaPct ?? null,
-      };
-    }).sort((a, b) => a.variacionKg - b.variacionKg);
-
-    // 2) último registro por miembro + $group por sede con $avg
-    const porSede = new Map<number, { pesos: number[]; grasas: number[] }>();
-    for (const l of porMiembro.values()) {
-      const ult = l[l.length - 1];
-      const g = porSede.get(ult.idSede) ?? { pesos: [], grasas: [] };
-      g.pesos.push(ult.pesoKg);
-      if (ult.grasaPct !== undefined) g.grasas.push(ult.grasaPct);
-      porSede.set(ult.idSede, g);
-    }
-    const prom = (l: number[]) => redondear(l.reduce((a, b) => a + b, 0) / l.length);
-    const promediosSede: PromedioSede[] = [...porSede.entries()].map(([idSede, g]) => ({
-      idSede, sede: sedeDe(idSede), miembros: g.pesos.length, pesoPromedio: prom(g.pesos),
-      grasaPromedio: g.grasas.length ? prom(g.grasas) : null,
-    })).sort((a, b) => a.sede.localeCompare(b.sede));
-
-    // 3) $match activa + $unwind ejercicios + $group por nombre
-    const ej = new Map<string, EjercicioFrecuente>();
-    for (const r of rutinas.filter((v) => v.activa)) {
-      for (const e of r.ejercicios) {
-        const k = e.nombre.toLowerCase();
-        const g = ej.get(k) ?? { nombre: e.nombre, tipo: e.tipo, rutinas: 0 };
-        g.rutinas++;
-        ej.set(k, g);
-      }
-    }
-    const ejercicios = [...ej.values()].sort((a, b) => b.rutinas - a.rutinas || a.nombre.localeCompare(b.nombre)).slice(0, 8);
-
-    // 4) $group por entrenador con $sum condicional
-    const ent = new Map<number, RutinasEntrenador>();
-    for (const r of rutinas) {
-      const g = ent.get(r.idEmpleado) ?? { idEmpleado: r.idEmpleado, entrenador: r.entrenador, activas: 0, inactivas: 0 };
-      if (r.activa) g.activas++; else g.inactivas++;
-      ent.set(r.idEmpleado, g);
-    }
-    const rutinasEntrenador = [...ent.values()].sort((a, b) => b.activas + b.inactivas - (a.activas + a.inactivas));
-
-    return this.ok({ tendencias, promediosSede, ejercicios, rutinasEntrenador });
+    return this.ok(calcularAnalisis(this.porSede(this.lRutinas)));
   }
 
   // ---------- Auditoría ----------

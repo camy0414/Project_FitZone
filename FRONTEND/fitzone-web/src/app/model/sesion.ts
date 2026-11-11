@@ -21,6 +21,9 @@ export interface Inscripcion {
   idMiembro: number;
   miembro: string;
   fechaInscripcion: string;
-  /** miembro_sesion.asistio admite NULL: null = aún sin registrar. */
+  /** miembro_sesion.asistio: FALSE hasta que el entrenador marca la asistencia. */
   asistio: boolean | null;
+  /** Fecha y hora de la sesión (las envía el backend; sirven para saber si ya empezó). */
+  fecha?: string;
+  horaInicio?: string;
 }

@@ -2,13 +2,17 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from '../../service/auth';
 import { DataService } from '../../service/data.service';
-import { LIMITES } from '../../service/validaciones';
+import { entero, LIMITES, requerido } from '../../service/validaciones';
 import { Clase } from '../../model/clase';
 import { Empleado } from '../../model/empleado';
 import { Sede } from '../../model/sede';
 import { BuscadorService } from '../../service/buscador';
 import { NotificacionService } from '../../service/notificacion';
 import { mensajeError } from '../../service/util';
+import { paginar } from '../../service/paginacion';
+
+/** Tope razonable de cupos por clase (evita errores de digitación). */
+const CUPO_MAXIMO = 500;
 
 @Component({
   selector: 'app-clases',
@@ -28,6 +32,7 @@ export class ClasesComponent implements OnInit {
   readonly puedeCrear = computed(() => ['ADMIN_SISTEMA', 'GERENTE_SEDE'].includes(this.usuario()?.rol ?? ''));
   readonly esEntrenador = computed(() => this.usuario()?.rol === 'ENTRENADOR_SEDE');
   readonly max = LIMITES.clase;
+  readonly cupoMaximo = CUPO_MAXIMO;
   readonly cargando = signal(true);
   readonly lista = signal<Clase[]>([]);
   readonly sedes = signal<Sede[]>([]);
@@ -40,6 +45,8 @@ export class ClasesComponent implements OnInit {
     const t = this.buscador.texto().toLowerCase();
     return this.lista().filter((c) => `${c.nombre} ${c.descripcion ?? ''} ${c.entrenador} ${c.sede}`.toLowerCase().includes(t));
   });
+  /** 15 registros por página (ver <app-paginador> al final de la lista). */
+  readonly pag = paginar(this.visibles);
 
   readonly abierto = signal(false);
   /** Clase en edición; null cuando se crea una nueva. */
@@ -47,9 +54,9 @@ export class ClasesComponent implements OnInit {
   readonly enviando = signal(false);
   readonly error = signal('');
   readonly form = this.fb.nonNullable.group({
-    nombre: ['', [Validators.required, Validators.maxLength(LIMITES.clase.nombre)]],
+    nombre: ['', [requerido, Validators.maxLength(LIMITES.clase.nombre)]],
     descripcion: ['', Validators.maxLength(LIMITES.clase.descripcion)],
-    cupoMaximo: [15, [Validators.required, Validators.min(1)]],
+    cupoMaximo: [15, [requerido, entero, Validators.min(1), Validators.max(CUPO_MAXIMO)]],
     idSede: [0, Validators.min(1)],
     idEmpleado: [0, Validators.min(1)],
   });
@@ -62,7 +69,7 @@ export class ClasesComponent implements OnInit {
       if (this.esAdmin()) this.data.sedes().subscribe((l) => this.sedes.set(l));
     }
   }
-  cargar() { this.data.clases().subscribe((l) => { this.lista.set(l); this.cargando.set(false); }); }
+  cargar() { this.data.clases().subscribe({ next: (l) => { this.lista.set(l); this.cargando.set(false); }, error: () => this.cargando.set(false) }); }
   nueva() {
     this.editando.set(null);
     const sede = this.esAdmin() ? 0 : (this.usuario()?.idSede ?? 0);

@@ -16,10 +16,10 @@
           <select id="mie" class="fz-input" [ngModel]="idMiembro()" (ngModelChange)="idMiembro.set(+$event)" [disabled]="llena()">
             <option [ngValue]="0">Selecciona un miembro…</option>
             @for (m of candidatos(); track m.idMiembro) {
-              <option [ngValue]="m.idMiembro">{{ m.nombreCompleto }} · {{ m.sede }}{{ m.planActual ? '' : ' (sin membresía activa)' }}</option>
+              <option [ngValue]="m.idMiembro" [disabled]="!m.planActual">{{ m.nombreCompleto }} · {{ m.sede }}{{ m.planActual ? '' : ' (sin membresía activa)' }}</option>
             }
           </select>
-          <p class="mt-1 text-xs text-zinc-400">Puedes inscribir miembros de cualquier sede de la cadena.</p>
+          <p class="mt-1 text-xs text-zinc-400">Puedes inscribir miembros de cualquier sede de la cadena. Para inscribirse, el miembro necesita una membresía activa.</p>
         </div>
         <button type="button" class="fz-btn" [disabled]="enviando() || !idMiembro() || llena()" (click)="inscribir()">{{ enviando() ? 'Inscribiendo…' : 'Inscribir' }}</button>
       </div>
