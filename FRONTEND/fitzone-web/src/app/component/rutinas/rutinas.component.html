@@ -15,7 +15,6 @@
             @if (puedeModificar(r)) {
               <button type="button" class="fz-btn-ghost" (click)="alternar(r)">{{ r.activa ? 'Desactivar' : 'Activar' }}</button>
               <button type="button" class="fz-btn-ghost" (click)="editar(r)" [attr.aria-label]="'Editar ' + r.nombreRutina"><app-icon name="pencil" cls="size-4" /></button>
-              <button type="button" class="fz-btn-ghost" (click)="porEliminar.set(r)" [attr.aria-label]="'Eliminar ' + r.nombreRutina"><app-icon name="trash" cls="size-4" /></button>
             }
           </div>
         </div>
@@ -28,6 +27,7 @@
                   <span class="font-bold">{{ e.nombre }}</span>
                   <span class="text-zinc-500">{{ detalle(e) }}</span>
                   @if (e.notas) { <span class="text-xs text-zinc-400">— {{ e.notas }}</span> }
+                  @if (e.videoUrl) { <a class="text-xs font-bold text-orange-600 underline" [href]="e.videoUrl" target="_blank" rel="noopener">Ver video</a> }
                 </li>
               }
             </ul>
@@ -97,6 +97,7 @@
                   }
                 }
                 <input class="fz-input col-span-2" formControlName="notas" placeholder="Notas" aria-label="Notas" />
+                <input type="url" class="fz-input col-span-2" formControlName="videoUrl" placeholder="Enlace a video (opcional)" aria-label="Enlace a video" />
               </div>
             </div>
           }
@@ -114,9 +115,4 @@
       </div>
     </form>
   </app-modal>
-}
-
-@if (porEliminar(); as r) {
-  <app-confirmar titulo="Eliminar rutina" [mensaje]="'Se eliminará la rutina «' + r.nombreRutina + '» de ' + r.miembro + '. Si solo quieres pausarla, desactívala.'"
-    [enviando]="eliminando()" (confirmar)="eliminar()" (cancelar)="porEliminar.set(null)" />
 }

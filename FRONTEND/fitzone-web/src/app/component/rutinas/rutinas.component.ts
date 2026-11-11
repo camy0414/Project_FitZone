@@ -36,8 +36,6 @@ export class RutinasComponent implements OnInit {
   readonly abierto = signal(false);
   /** Rutina en edición; null cuando el formulario crea una nueva. */
   readonly editando = signal<Rutina | null>(null);
-  readonly porEliminar = signal<Rutina | null>(null);
-  readonly eliminando = signal(false);
   readonly enviando = signal(false);
   readonly error = signal('');
   readonly form = this.fb.nonNullable.group({
@@ -54,7 +52,12 @@ export class RutinasComponent implements OnInit {
     this.cargar();
     if (this.esEntrenador()) this.data.miembros().subscribe((l) => this.miembros.set(l));
   }
-  cargar() { this.data.rutinas().subscribe((l) => { this.lista.set(l); this.cargando.set(false); }); }
+  cargar() {
+    this.data.rutinas().subscribe({
+      next: (l) => { this.lista.set(l); this.cargando.set(false); },
+      error: (e) => { this.cargando.set(false); this.toast.error(mensajeError(e)); },
+    });
+  }
 
   alternarDetalle(id: string) {
     this.abiertas.update((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
@@ -87,6 +90,7 @@ export class RutinasComponent implements OnInit {
       duracionMin: [e?.duracionMin ?? (null as number | null)],
       duracionSeg: [e?.duracionSeg ?? (null as number | null)],
       distanciaKm: [e?.distanciaKm ?? (null as number | null)],
+      videoUrl: [e?.videoUrl ?? ''],
       notas: [e?.notas ?? ''],
     });
   }
@@ -110,15 +114,6 @@ export class RutinasComponent implements OnInit {
     for (const e of r.ejercicios) this.ejercicios.push(this.nuevoEjercicio(e));
     this.error.set(''); this.abierto.set(true);
   }
-  eliminar() {
-    const r = this.porEliminar();
-    if (!r) return;
-    this.eliminando.set(true);
-    this.data.eliminarRutina(r.idRutina).subscribe({
-      next: (m) => { this.eliminando.set(false); this.porEliminar.set(null); this.toast.ok(m); this.cargar(); },
-      error: (e) => { this.eliminando.set(false); this.porEliminar.set(null); this.toast.error(mensajeError(e)); },
-    });
-  }
   guardar() {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     const v = this.form.getRawValue();
@@ -127,6 +122,7 @@ export class RutinasComponent implements OnInit {
       nombre: e.nombre.trim(), tipo: e.tipo,
       series: num(e.series), repeticiones: num(e.repeticiones), pesoKg: num(e.pesoKg),
       duracionMin: num(e.duracionMin), duracionSeg: num(e.duracionSeg), distanciaKm: num(e.distanciaKm),
+      videoUrl: e.videoUrl?.trim() || undefined,
       notas: e.notas?.trim() || undefined,
     }));
     this.enviando.set(true); this.error.set('');
