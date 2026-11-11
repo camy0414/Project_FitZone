@@ -1,0 +1,9 @@
+<app-modal [titulo]="titulo()" (cerrar)="cancelar.emit()">
+  <p class="text-sm leading-6 text-zinc-600">{{ mensaje() }}</p>
+  <div class="mt-6 flex justify-end gap-2">
+    <button type="button" class="fz-btn-ghost" (click)="cancelar.emit()">Cancelar</button>
+    <button type="button" class="fz-btn !bg-red-500 !text-white hover:!bg-red-600" [disabled]="enviando()" (click)="confirmar.emit()">
+      {{ enviando() ? 'Procesando…' : accion() }}
+    </button>
+  </div>
+</app-modal>

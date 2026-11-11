@@ -1,0 +1,22 @@
+<app-panel titulo="Auditoría" descripcion="Quién creó o modificó cada registro del sistema, y cuándo." [cargando]="cargando()">
+  <div acciones class="flex gap-2">
+    <select class="fz-input" aria-label="Tipo de registro" [ngModel]="tabla()" (ngModelChange)="tabla.set($event)">
+      <option value="">Todos los registros</option>
+      @for (t of tablas(); track t) { <option [value]="t">{{ registro(t) }}</option> }
+    </select>
+    <select class="fz-input" aria-label="Acción" [ngModel]="operacion()" (ngModelChange)="operacion.set($event)">
+      <option value="">Todas las acciones</option>
+      @for (o of operaciones(); track o) { <option [value]="o">{{ accion(o) }}</option> }
+    </select>
+  </div>
+  @if (error()) { <p class="m-6 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">{{ error() }}</p> }
+  <div class="divide-y divide-black/5">
+    @for (a of pag.items(); track a.idAuditoria) {
+      <app-fila
+        [principal]="titulo(a)"
+        [secundario]="(a.empleado ?? 'Proceso automático') + ' · ' + cargo(a.rolBd)"
+        [meta]="(a.fecha.slice(0, 10) | fecha: true) + ' · ' + hora(a.fecha)" />
+    } @empty { <app-vacio mensaje="No hay cambios registrados." detalle="Prueba con otro filtro." /> }
+  </div>
+  <app-paginador [pag]="pag" />
+</app-panel>

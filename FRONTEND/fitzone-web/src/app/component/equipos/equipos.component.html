@@ -1,0 +1,59 @@
+<app-panel titulo="Equipos" descripcion="Inventario de equipos por sede y su último mantenimiento." [cargando]="cargando()">
+  <button acciones type="button" class="fz-btn" (click)="nuevo()">Nuevo equipo</button>
+  <div class="divide-y divide-black/5">
+    @for (e of pag.items(); track e.idEquipo) {
+      <app-fila [principal]="e.nombre" [secundario]="e.tipo + ' · adquirido ' + (e.fechaAdquisicion | fecha: true)"
+        [meta]="e.sede + ' · ' + (e.ultimoMantenimiento ? 'último mantenimiento ' + (e.ultimoMantenimiento | fecha: true) : 'sin mantenimientos')">
+        <button type="button" class="fz-btn-ghost !px-2.5" (click)="editar(e)" [attr.aria-label]="'Editar ' + e.nombre"><app-icon name="pencil" cls="size-4" /></button>
+      </app-fila>
+    } @empty { <app-vacio /> }
+  </div>
+  <app-paginador [pag]="pag" />
+</app-panel>
+
+@if (abierto()) {
+  <app-modal [titulo]="editando() ? 'Editar equipo' : 'Nuevo equipo'" (cerrar)="abierto.set(false)">
+    <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-4">
+      <div>
+        <label class="fz-label" for="nom">Nombre *</label>
+        <input id="nom" class="fz-input" formControlName="nombre" [maxlength]="max.nombre" placeholder="Caminadora Life Fitness" />
+        @if (form.controls.nombre.touched && form.controls.nombre.invalid) { <p class="fz-error">Obligatorio (máximo {{ max.nombre }} caracteres).</p> }
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label class="fz-label" for="tip">Tipo *</label>
+          <select id="tip" class="fz-input" formControlName="idTipoEquipo">
+            <option [ngValue]="0" disabled>Selecciona…</option>
+            @for (t of tipos(); track t.id) { <option [ngValue]="t.id">{{ t.nombre }}</option> }
+          </select>
+          @if (form.controls.idTipoEquipo.touched && form.controls.idTipoEquipo.invalid) { <p class="fz-error">Selecciona un tipo.</p> }
+        </div>
+        <div>
+          <label class="fz-label" for="fa">Fecha de adquisición *</label>
+          <input id="fa" type="date" class="fz-input" [min]="fechaMinima" [max]="hoy" formControlName="fechaAdquisicion" />
+          @if (form.controls.fechaAdquisicion.touched && form.controls.fechaAdquisicion.invalid) {
+            <p class="fz-error">{{ form.controls.fechaAdquisicion.hasError('futura') ? 'No puede ser una fecha futura.'
+              : form.controls.fechaAdquisicion.hasError('antigua') ? 'Revisa el año de la fecha.' : 'Elige la fecha.' }}</p>
+          }
+        </div>
+      </div>
+      @if (esAdmin()) {
+        <div>
+          <label class="fz-label" for="sed">Sede *</label>
+          <select id="sed" class="fz-input" formControlName="idSede">
+            <option [ngValue]="0" disabled>Selecciona…</option>
+            @for (s of sedes(); track s.idSede) { <option [ngValue]="s.idSede">{{ s.nombre }}</option> }
+          </select>
+          @if (form.controls.idSede.touched && form.controls.idSede.invalid) { <p class="fz-error">Selecciona una sede.</p> }
+        </div>
+      } @else {
+        <p class="rounded-xl bg-zinc-100 px-4 py-3 text-sm text-zinc-600">Se registrará en tu sede: <b>{{ usuario()?.sede }}</b>.</p>
+      }
+      @if (error()) { <p class="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">{{ error() }}</p> }
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" class="fz-btn-ghost" (click)="abierto.set(false)">Cancelar</button>
+        <button type="submit" class="fz-btn" [disabled]="enviando()">{{ enviando() ? 'Guardando…' : editando() ? 'Guardar cambios' : 'Registrar equipo' }}</button>
+      </div>
+    </form>
+  </app-modal>
+}

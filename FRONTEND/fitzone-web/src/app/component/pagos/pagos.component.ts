@@ -1,0 +1,36 @@
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { DataService } from '../../service/data.service';
+import { Pago } from '../../model/pago';
+import { BuscadorService } from '../../service/buscador';
+import { paginar } from '../../service/paginacion';
+
+@Component({
+  selector: 'app-pagos',
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './pagos.component.html',
+  styleUrl: './pagos.component.css',
+})
+export class PagosComponent implements OnInit {
+  private data = inject(DataService);
+  private buscador = inject(BuscadorService);
+
+  readonly cargando = signal(true);
+  readonly lista = signal<Pago[]>([]);
+  readonly visibles = computed(() => {
+    const t = this.buscador.texto().toLowerCase();
+    return this.lista().filter((p) => `${p.miembro} ${p.metodo}`.toLowerCase().includes(t));
+  });
+  /** 15 registros por página (ver <app-paginador> al final de la lista). */
+  readonly pag = paginar(this.visibles);
+  readonly total = computed(() => this.visibles().reduce((a, p) => a + p.monto, 0));
+
+  ngOnInit() {
+    this.buscador.texto.set('');
+    // los más recientes primero
+    this.data.pagos().subscribe({
+      next: (l) => { this.lista.set([...l].sort((a, b) => b.fechaPago.localeCompare(a.fechaPago) || b.idPago - a.idPago)); this.cargando.set(false); },
+      error: () => this.cargando.set(false),
+    });
+  }
+}

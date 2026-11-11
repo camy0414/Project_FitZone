@@ -1,0 +1,17 @@
+<header class="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-black/5 bg-[#f5f4f1]/90 px-5 backdrop-blur-xl sm:px-8">
+  <div class="flex items-center gap-3">
+    <button type="button" (click)="abrirMenu.emit()" class="grid size-10 place-items-center rounded-xl border border-black/8 bg-white lg:hidden" aria-label="Abrir menú">
+      <app-icon name="menu" cls="size-5" />
+    </button>
+    <div class="hidden items-center gap-2 rounded-xl border border-black/8 bg-white px-3 sm:flex">
+      <app-icon name="search" cls="size-4 text-zinc-400" />
+      <input [value]="buscador.texto()" (input)="buscar($event)" placeholder="Buscar en este módulo..." class="h-10 w-64 bg-transparent text-sm outline-none placeholder:text-zinc-400" />
+    </div>
+  </div>
+  <div class="flex items-center gap-3">
+    <div class="hidden text-right md:block">
+      <p class="text-xs font-bold text-zinc-800">{{ sedeLabel() }}</p>
+      <p class="text-[11px] capitalize text-zinc-400">{{ hoy }}</p>
+    </div>
+  </div>
+</header>
