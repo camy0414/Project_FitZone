@@ -8,9 +8,11 @@ public class ProgresoDTO {
 	private Long idMiembro;
 	private String miembro;
 	private Long idSede;
+	private Long registradoPor;
+	private String entrenador;
 	private LocalDate fecha;
 	private Double pesoKg;
-	private Double grasaPct;
+	private Double grasaCorporalPct;
 	private MedidasDTO medidas;
 	private String notas;
 
@@ -18,15 +20,17 @@ public class ProgresoDTO {
 		
 	}
 
-	public ProgresoDTO(String idProgreso, Long idMiembro, String miembro, Long idSede, LocalDate fecha, Double pesoKg, Double grasaPct, MedidasDTO medidas, String notas) {
+	public ProgresoDTO(String idProgreso, Long idMiembro, String miembro, Long idSede, Long registradoPor, String entrenador, LocalDate fecha, Double pesoKg, Double grasaCorporalPct, MedidasDTO medidas, String notas) {
 		super();
 		this.idProgreso = idProgreso;
 		this.idMiembro = idMiembro;
 		this.miembro = miembro;
 		this.idSede = idSede;
+		this.registradoPor = registradoPor;
+		this.entrenador = entrenador;
 		this.fecha = fecha;
 		this.pesoKg = pesoKg;
-		this.grasaPct = grasaPct;
+		this.grasaCorporalPct = grasaCorporalPct;
 		this.medidas = medidas;
 		this.notas = notas;
 	}
@@ -63,6 +67,22 @@ public class ProgresoDTO {
 		this.idSede = idSede;
 	}
 
+	public Long getRegistradoPor() {
+		return registradoPor;
+	}
+
+	public void setRegistradoPor(Long registradoPor) {
+		this.registradoPor = registradoPor;
+	}
+
+	public String getEntrenador() {
+		return entrenador;
+	}
+
+	public void setEntrenador(String entrenador) {
+		this.entrenador = entrenador;
+	}
+
 	public LocalDate getFecha() {
 		return fecha;
 	}
@@ -79,12 +99,12 @@ public class ProgresoDTO {
 		this.pesoKg = pesoKg;
 	}
 
-	public Double getGrasaPct() {
-		return grasaPct;
+	public Double getGrasaCorporalPct() {
+		return grasaCorporalPct;
 	}
 
-	public void setGrasaPct(Double grasaPct) {
-		this.grasaPct = grasaPct;
+	public void setGrasaCorporalPct(Double grasaCorporalPct) {
+		this.grasaCorporalPct = grasaCorporalPct;
 	}
 
 	public MedidasDTO getMedidas() {

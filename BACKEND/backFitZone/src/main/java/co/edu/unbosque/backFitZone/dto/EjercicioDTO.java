@@ -3,7 +3,6 @@ package co.edu.unbosque.backFitZone.dto;
 public class EjercicioDTO {
 
 	private String nombre;
-	
 	private String tipo;
 	private Integer series;
 	private Integer repeticiones;
@@ -11,13 +10,14 @@ public class EjercicioDTO {
 	private Integer duracionMin;
 	private Integer duracionSeg;
 	private Double distanciaKm;
+	private String videoUrl;
 	private String notas;
 
 	public EjercicioDTO() {
 		
 	}
 
-	public EjercicioDTO(String nombre, String tipo, Integer series, Integer repeticiones, Double pesoKg, Integer duracionMin, Integer duracionSeg, Double distanciaKm, String notas) {
+	public EjercicioDTO(String nombre, String tipo, Integer series, Integer repeticiones, Double pesoKg, Integer duracionMin, Integer duracionSeg, Double distanciaKm, String videoUrl, String notas) {
 		super();
 		this.nombre = nombre;
 		this.tipo = tipo;
@@ -27,6 +27,7 @@ public class EjercicioDTO {
 		this.duracionMin = duracionMin;
 		this.duracionSeg = duracionSeg;
 		this.distanciaKm = distanciaKm;
+		this.videoUrl = videoUrl;
 		this.notas = notas;
 	}
 
@@ -92,6 +93,14 @@ public class EjercicioDTO {
 
 	public void setDistanciaKm(Double distanciaKm) {
 		this.distanciaKm = distanciaKm;
+	}
+
+	public String getVideoUrl() {
+		return videoUrl;
+	}
+
+	public void setVideoUrl(String videoUrl) {
+		this.videoUrl = videoUrl;
 	}
 
 	public String getNotas() {

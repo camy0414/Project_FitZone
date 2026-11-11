@@ -3,16 +3,12 @@ package co.edu.unbosque.backFitZone.model;
 import java.time.LocalDate;
 import java.util.List;
 
-
 public class Rutina {
 
 	private String idRutina;
 	private Long idMiembro;
-	private String miembro;
 	private Long idEmpleado;
-	private String entrenador;
 	private Long idSede;
-	private String sede;
 	private String nombreRutina;
 	private String objetivo;
 	private LocalDate fechaCreacion;
@@ -24,17 +20,12 @@ public class Rutina {
 		
 	}
 
-	public Rutina(String idRutina, Long idMiembro, String miembro, Long idEmpleado, String entrenador, Long idSede,
-			String sede, String nombreRutina, String objetivo, LocalDate fechaCreacion, Boolean activa,
-			String notasEntrenador, List<Ejercicio> ejercicios) {
+	public Rutina(String idRutina, Long idMiembro, Long idEmpleado, Long idSede, String nombreRutina, String objetivo, LocalDate fechaCreacion, Boolean activa, String notasEntrenador, List<Ejercicio> ejercicios) {
 		super();
 		this.idRutina = idRutina;
 		this.idMiembro = idMiembro;
-		this.miembro = miembro;
 		this.idEmpleado = idEmpleado;
-		this.entrenador = entrenador;
 		this.idSede = idSede;
-		this.sede = sede;
 		this.nombreRutina = nombreRutina;
 		this.objetivo = objetivo;
 		this.fechaCreacion = fechaCreacion;
@@ -42,7 +33,6 @@ public class Rutina {
 		this.notasEntrenador = notasEntrenador;
 		this.ejercicios = ejercicios;
 	}
-
 
 	public String getIdRutina() {
 		return idRutina;
@@ -60,14 +50,6 @@ public class Rutina {
 		this.idMiembro = idMiembro;
 	}
 
-	public String getMiembro() {
-		return miembro;
-	}
-
-	public void setMiembro(String miembro) {
-		this.miembro = miembro;
-	}
-
 	public Long getIdEmpleado() {
 		return idEmpleado;
 	}
@@ -76,28 +58,12 @@ public class Rutina {
 		this.idEmpleado = idEmpleado;
 	}
 
-	public String getEntrenador() {
-		return entrenador;
-	}
-
-	public void setEntrenador(String entrenador) {
-		this.entrenador = entrenador;
-	}
-
 	public Long getIdSede() {
 		return idSede;
 	}
 
 	public void setIdSede(Long idSede) {
 		this.idSede = idSede;
-	}
-
-	public String getSede() {
-		return sede;
-	}
-
-	public void setSede(String sede) {
-		this.sede = sede;
 	}
 
 	public String getNombreRutina() {
@@ -148,11 +114,9 @@ public class Rutina {
 		this.ejercicios = ejercicios;
 	}
 
-	/** Subdocumento del arreglo ejercicios. Los campos con valor dependen del tipo (fuerza, cardio o movilidad). */
 	public static class Ejercicio {
 
 		private String nombre;
-		/** fuerza | cardio | movilidad */
 		private String tipo;
 		private Integer series;
 		private Integer repeticiones;
@@ -160,9 +124,24 @@ public class Rutina {
 		private Integer duracionMin;
 		private Integer duracionSeg;
 		private Double distanciaKm;
+		private String videoUrl;
 		private String notas;
 
 		public Ejercicio() {
+		}
+
+		public Ejercicio(String nombre, String tipo, Integer series, Integer repeticiones, Double pesoKg, Integer duracionMin, Integer duracionSeg, Double distanciaKm, String videoUrl, String notas) {
+			super();
+			this.nombre = nombre;
+			this.tipo = tipo;
+			this.series = series;
+			this.repeticiones = repeticiones;
+			this.pesoKg = pesoKg;
+			this.duracionMin = duracionMin;
+			this.duracionSeg = duracionSeg;
+			this.distanciaKm = distanciaKm;
+			this.videoUrl = videoUrl;
+			this.notas = notas;
 		}
 
 		public String getNombre() {
@@ -227,6 +206,14 @@ public class Rutina {
 
 		public void setDistanciaKm(Double distanciaKm) {
 			this.distanciaKm = distanciaKm;
+		}
+
+		public String getVideoUrl() {
+			return videoUrl;
+		}
+
+		public void setVideoUrl(String videoUrl) {
+			this.videoUrl = videoUrl;
 		}
 
 		public String getNotas() {

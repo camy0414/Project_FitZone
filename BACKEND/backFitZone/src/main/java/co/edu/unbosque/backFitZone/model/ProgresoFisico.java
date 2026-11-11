@@ -6,35 +6,31 @@ public class ProgresoFisico {
 
 	private String idProgreso;
 	private Long idMiembro;
-	private String miembro;
 	private Long idSede;
-	private Long idEmpleado;
+	private Long registradoPor;
 	private LocalDate fecha;
 	private Double pesoKg;
-	private Double grasaPct;
+	private Double grasaCorporalPct;
 	private Medidas medidas;
 	private String notas;
 
 	public ProgresoFisico() {
 		
 	}
-	
-	public ProgresoFisico(String idProgreso, Long idMiembro, String miembro, Long idSede, Long idEmpleado,
-			LocalDate fecha, Double pesoKg, Double grasaPct, Medidas medidas, String notas) {
+
+	public ProgresoFisico(String idProgreso, Long idMiembro, Long idSede, Long registradoPor, LocalDate fecha, Double pesoKg, Double grasaCorporalPct, Medidas medidas, String notas) {
 		super();
 		this.idProgreso = idProgreso;
 		this.idMiembro = idMiembro;
-		this.miembro = miembro;
 		this.idSede = idSede;
-		this.idEmpleado = idEmpleado;
+		this.registradoPor = registradoPor;
 		this.fecha = fecha;
 		this.pesoKg = pesoKg;
-		this.grasaPct = grasaPct;
+		this.grasaCorporalPct = grasaCorporalPct;
 		this.medidas = medidas;
 		this.notas = notas;
 	}
 
-	
 	public String getIdProgreso() {
 		return idProgreso;
 	}
@@ -51,14 +47,6 @@ public class ProgresoFisico {
 		this.idMiembro = idMiembro;
 	}
 
-	public String getMiembro() {
-		return miembro;
-	}
-
-	public void setMiembro(String miembro) {
-		this.miembro = miembro;
-	}
-
 	public Long getIdSede() {
 		return idSede;
 	}
@@ -67,12 +55,12 @@ public class ProgresoFisico {
 		this.idSede = idSede;
 	}
 
-	public Long getIdEmpleado() {
-		return idEmpleado;
+	public Long getRegistradoPor() {
+		return registradoPor;
 	}
 
-	public void setIdEmpleado(Long idEmpleado) {
-		this.idEmpleado = idEmpleado;
+	public void setRegistradoPor(Long registradoPor) {
+		this.registradoPor = registradoPor;
 	}
 
 	public LocalDate getFecha() {
@@ -91,12 +79,12 @@ public class ProgresoFisico {
 		this.pesoKg = pesoKg;
 	}
 
-	public Double getGrasaPct() {
-		return grasaPct;
+	public Double getGrasaCorporalPct() {
+		return grasaCorporalPct;
 	}
 
-	public void setGrasaPct(Double grasaPct) {
-		this.grasaPct = grasaPct;
+	public void setGrasaCorporalPct(Double grasaCorporalPct) {
+		this.grasaCorporalPct = grasaCorporalPct;
 	}
 
 	public Medidas getMedidas() {
@@ -115,7 +103,6 @@ public class ProgresoFisico {
 		this.notas = notas;
 	}
 
-	/** Subdocumento medidas (opcional). */
 	public static class Medidas {
 
 		private Double cinturaCm;
@@ -124,6 +111,14 @@ public class ProgresoFisico {
 		private Double caderaCm;
 
 		public Medidas() {
+		}
+
+		public Medidas(Double cinturaCm, Double pechoCm, Double brazoCm, Double caderaCm) {
+			super();
+			this.cinturaCm = cinturaCm;
+			this.pechoCm = pechoCm;
+			this.brazoCm = brazoCm;
+			this.caderaCm = caderaCm;
 		}
 
 		public Double getCinturaCm() {
