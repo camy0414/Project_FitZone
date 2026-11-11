@@ -334,7 +334,7 @@ public class RutinaService implements RutinaRepository {
 			ejercicios.add(e);
 		}
 
-		rutina.setIdRutina(doc.getObjectId("_id").toHexString());
+		rutina.setIdRutina(doc.getObjectId("_id").toString());
 		rutina.setIdMiembro(((Number) doc.get("id_miembro")).longValue());
 		rutina.setIdEmpleado(((Number) doc.get("id_empleado")).longValue());
 		rutina.setIdSede(((Number) doc.get("id_sede")).longValue());
