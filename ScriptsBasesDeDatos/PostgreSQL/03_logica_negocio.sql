@@ -256,24 +256,46 @@ CREATE OR REPLACE TRIGGER trg_mantenimiento_validar BEFORE INSERT OR UPDATE ON m
     FOR EACH ROW EXECUTE FUNCTION fn_tg_mantenimiento_validar();
 
 
--- Registra en auditoria cada cambio (el backend envía el empleado con SET LOCAL fitzone.id_empleado)
+-- Registra en auditoria cada creación o actualizacion
 CREATE OR REPLACE FUNCTION fn_tg_auditoria()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = public, pg_temp AS $$
+DECLARE
+    v_id VARCHAR;
 BEGIN
+    v_id := to_jsonb(NEW) ->> TG_ARGV[0];
+    IF TG_NARGS > 1 THEN
+        v_id := v_id || '-' || (to_jsonb(NEW) ->> TG_ARGV[1]);
+    END IF;
+
     INSERT INTO auditoria (tabla, operacion, id_registro, rol_bd, id_empleado)
-    VALUES (TG_TABLE_NAME, TG_OP, to_jsonb(NEW) ->> TG_ARGV[0], current_setting('role'),
+    VALUES (TG_TABLE_NAME, TG_OP, v_id, current_setting('role'),
             nullif(current_setting('fitzone.id_empleado', true), '')::NUMERIC);
     RETURN NULL;
 END $$;
 
-CREATE OR REPLACE TRIGGER trg_auditoria_pago AFTER INSERT ON pago
-    FOR EACH ROW EXECUTE FUNCTION fn_tg_auditoria('id_pago');
-CREATE OR REPLACE TRIGGER trg_auditoria_membresia AFTER INSERT OR UPDATE ON membresia
-    FOR EACH ROW EXECUTE FUNCTION fn_tg_auditoria('id_membresia');
+CREATE OR REPLACE TRIGGER trg_auditoria_sede AFTER INSERT OR UPDATE ON sede
+    FOR EACH ROW EXECUTE FUNCTION fn_tg_auditoria('id_sede');
 CREATE OR REPLACE TRIGGER trg_auditoria_empleado AFTER INSERT OR UPDATE ON empleado
     FOR EACH ROW EXECUTE FUNCTION fn_tg_auditoria('id_empleado');
-
+CREATE OR REPLACE TRIGGER trg_auditoria_miembro AFTER INSERT OR UPDATE ON miembro
+    FOR EACH ROW EXECUTE FUNCTION fn_tg_auditoria('id_miembro');
+CREATE OR REPLACE TRIGGER trg_auditoria_info_medica AFTER INSERT OR UPDATE ON info_medica
+    FOR EACH ROW EXECUTE FUNCTION fn_tg_auditoria('id_miembro');
+CREATE OR REPLACE TRIGGER trg_auditoria_membresia AFTER INSERT OR UPDATE ON membresia
+    FOR EACH ROW EXECUTE FUNCTION fn_tg_auditoria('id_membresia');
+CREATE OR REPLACE TRIGGER trg_auditoria_pago AFTER INSERT ON pago
+    FOR EACH ROW EXECUTE FUNCTION fn_tg_auditoria('id_pago');
+CREATE OR REPLACE TRIGGER trg_auditoria_clase AFTER INSERT OR UPDATE ON clase
+    FOR EACH ROW EXECUTE FUNCTION fn_tg_auditoria('id_clase');
+CREATE OR REPLACE TRIGGER trg_auditoria_sesion AFTER INSERT OR UPDATE ON sesion
+    FOR EACH ROW EXECUTE FUNCTION fn_tg_auditoria('numero_sesion');
+CREATE OR REPLACE TRIGGER trg_auditoria_miembro_sesion AFTER INSERT OR UPDATE ON miembro_sesion
+    FOR EACH ROW EXECUTE FUNCTION fn_tg_auditoria('id_miembro', 'numero_sesion');
+CREATE OR REPLACE TRIGGER trg_auditoria_equipo AFTER INSERT OR UPDATE ON equipo
+    FOR EACH ROW EXECUTE FUNCTION fn_tg_auditoria('id_equipo');
+CREATE OR REPLACE TRIGGER trg_auditoria_mantenimiento AFTER INSERT ON mantenimiento_equipo
+    FOR EACH ROW EXECUTE FUNCTION fn_tg_auditoria('numero_mantenimiento');
 
 -- ---------------------------------------------------------------------
 -- PROCEDIMIENTOS
