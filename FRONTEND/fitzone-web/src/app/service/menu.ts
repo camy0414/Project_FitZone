@@ -21,7 +21,6 @@ export const MENU: Record<RolNombre, ItemMenu[]> = {
     { etiqueta: 'Mantenimiento', ruta: '/mantenimiento', icono: 'wrench' },
     { etiqueta: 'Rutinas', ruta: '/rutinas', icono: 'activity' },
     { etiqueta: 'Progreso físico', ruta: '/progreso', icono: 'trending-up' },
-    { etiqueta: 'Análisis (MongoDB)', ruta: '/analisis', icono: 'database' },
     { etiqueta: 'Reportes', ruta: '/reportes', icono: 'chart' },
     { etiqueta: 'Auditoría', ruta: '/auditoria', icono: 'lock' },
   ],
@@ -37,7 +36,6 @@ export const MENU: Record<RolNombre, ItemMenu[]> = {
     { etiqueta: 'Personal', ruta: '/empleados', icono: 'user-cog' },
     { etiqueta: 'Rutinas', ruta: '/rutinas', icono: 'activity' },
     { etiqueta: 'Progreso físico', ruta: '/progreso', icono: 'trending-up' },
-    { etiqueta: 'Análisis (MongoDB)', ruta: '/analisis', icono: 'database' },
     { etiqueta: 'Reportes', ruta: '/reportes', icono: 'chart' },
   ],
   RECEPCIONISTA_SEDE: [
@@ -56,7 +54,6 @@ export const MENU: Record<RolNombre, ItemMenu[]> = {
     { etiqueta: 'Asistencia', ruta: '/asistencia', icono: 'clipboard' },
     { etiqueta: 'Rutinas', ruta: '/rutinas', icono: 'activity' },
     { etiqueta: 'Progreso físico', ruta: '/progreso', icono: 'trending-up' },
-    { etiqueta: 'Análisis (MongoDB)', ruta: '/analisis', icono: 'database' },
     { etiqueta: 'Mis reportes', ruta: '/reportes', icono: 'chart' },
   ],
 };
@@ -79,6 +76,5 @@ export const ACCESO: Record<string, RolNombre[]> = {
   mantenimiento: ['ADMIN_SISTEMA', 'GERENTE_SEDE'],
   rutinas: ['ADMIN_SISTEMA', 'GERENTE_SEDE', 'ENTRENADOR_SEDE'],
   progreso: ['ADMIN_SISTEMA', 'GERENTE_SEDE', 'ENTRENADOR_SEDE'],
-  analisis: ['ADMIN_SISTEMA', 'GERENTE_SEDE', 'ENTRENADOR_SEDE'],
   reportes: ['ADMIN_SISTEMA', 'GERENTE_SEDE', 'RECEPCIONISTA_SEDE', 'ENTRENADOR_SEDE'],
 };

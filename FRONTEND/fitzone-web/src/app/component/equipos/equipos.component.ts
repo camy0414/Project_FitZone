@@ -2,13 +2,17 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from '../../service/auth';
 import { DataService } from '../../service/data.service';
-import { LIMITES } from '../../service/validaciones';
+import { fechaDesde, fechaHasta, LIMITES, requerido } from '../../service/validaciones';
 import { Catalogo } from '../../model/catalogo';
 import { Equipo } from '../../model/equipo';
 import { Sede } from '../../model/sede';
 import { BuscadorService } from '../../service/buscador';
 import { NotificacionService } from '../../service/notificacion';
 import { hoyISO, mensajeError } from '../../service/util';
+import { paginar } from '../../service/paginacion';
+
+/** Fecha mínima aceptada para la compra de un equipo. */
+const FECHA_MINIMA = '1990-01-01';
 
 @Component({
   selector: 'app-equipos',
@@ -31,10 +35,13 @@ export class EquiposComponent implements OnInit {
   readonly tipos = signal<Catalogo[]>([]);
   readonly hoy = hoyISO();
   readonly max = LIMITES.equipo;
+  readonly fechaMinima = FECHA_MINIMA;
   readonly visibles = computed(() => {
     const t = this.buscador.texto().toLowerCase();
     return this.lista().filter((e) => `${e.nombre} ${e.tipo} ${e.sede}`.toLowerCase().includes(t));
   });
+  /** 15 registros por página (ver <app-paginador> al final de la lista). */
+  readonly pag = paginar(this.visibles);
 
   readonly abierto = signal(false);
   /** Equipo en edición; null cuando se registra uno nuevo. */
@@ -42,10 +49,11 @@ export class EquiposComponent implements OnInit {
   readonly enviando = signal(false);
   readonly error = signal('');
   readonly form = this.fb.nonNullable.group({
-    nombre: ['', [Validators.required, Validators.maxLength(LIMITES.equipo.nombre)]],
+    nombre: ['', [requerido, Validators.maxLength(LIMITES.equipo.nombre)]],
     idTipoEquipo: [0, Validators.min(1)],
     idSede: [0, Validators.min(1)],
-    fechaAdquisicion: [hoyISO(), Validators.required],
+    // no puede ser futura; el mínimo evita años mal escritos (p. ej. 0202)
+    fechaAdquisicion: [hoyISO(), [requerido, fechaHasta(hoyISO), fechaDesde(() => FECHA_MINIMA)]],
   });
 
   ngOnInit() {
@@ -54,7 +62,7 @@ export class EquiposComponent implements OnInit {
     this.data.tiposEquipo().subscribe((l) => this.tipos.set(l));
     if (this.esAdmin()) this.data.sedes().subscribe((l) => this.sedes.set(l));
   }
-  cargar() { this.data.equipos().subscribe((l) => { this.lista.set(l); this.cargando.set(false); }); }
+  cargar() { this.data.equipos().subscribe({ next: (l) => { this.lista.set(l); this.cargando.set(false); }, error: () => this.cargando.set(false) }); }
   nuevo() {
     this.editando.set(null);
     this.form.reset({ idTipoEquipo: 0, idSede: this.esAdmin() ? 0 : (this.usuario()?.idSede ?? 0), fechaAdquisicion: hoyISO() });

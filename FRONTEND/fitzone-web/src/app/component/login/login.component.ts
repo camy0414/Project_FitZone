@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { environment } from '../../../environments/environment';
 import { AuthService } from '../../service/auth';
 import { primeraRuta } from '../../service/menu';
 import { mensajeError } from '../../service/util';
@@ -28,16 +27,11 @@ export class LoginComponent {
   });
 
   /**
-   * Accesos rápidos por rol. Con el backend llenan solo el correo (usuarios de FitZone Chapinero
-   * del script 02_insercion_datos.sql); con los datos de ejemplo llenan también la contraseña.
+   * Accesos rápidos por rol, solo en el modo de demostración (sin backend). Con el backend
+   * no se muestran: la pantalla de ingreso no debe exponer correos del personal.
    */
   readonly demo: [string, string][] = this.loginReal
-    ? [
-        ['Administrador', 'sebastian.perez@fitzone.com.co'],
-        ['Gerente', 'sofia.sanchez@fitzone.com.co'],
-        ['Recepción', 'viviana.ospina@fitzone.com.co'],
-        ['Entrenador', 'nicolas.mendoza@fitzone.com.co'],
-      ]
+    ? []
     : [
         ['Administrador', 'admin@fitzone.example.com'],
         ['Gerente', 'gerente.chapinero@fitzone.example.com'],
@@ -61,7 +55,7 @@ export class LoginComponent {
       next: (r) => this.router.navigateByUrl(primeraRuta(r.usuario.rol)),
       error: (e) => {
         this.cargando.set(false);
-        if (e?.status === 0) this.error.set(`No se pudo conectar con el backend (${environment.apiUrl}). Revisa que esté corriendo.`);
+        if (e?.status === 0) this.error.set('No se pudo conectar con el servidor. Inténtalo de nuevo en unos minutos.');
         else if (e?.status === 401) this.error.set(typeof e.error === 'string' && e.error ? e.error : e?.error?.mensaje ?? 'Correo o contraseña incorrectos.');
         else this.error.set(mensajeError(e));
       },

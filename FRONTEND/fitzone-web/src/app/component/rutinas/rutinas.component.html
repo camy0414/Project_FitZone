@@ -1,7 +1,7 @@
-<app-panel [titulo]="esEntrenador() ? 'Rutinas de mis miembros' : 'Rutinas'" descripcion="Rutinas de entrenamiento guardadas en MongoDB, con sus ejercicios." [cargando]="cargando()">
+<app-panel [titulo]="esEntrenador() ? 'Rutinas de mis miembros' : 'Rutinas'" descripcion="Rutinas de entrenamiento de los miembros, con sus ejercicios." [cargando]="cargando()">
   @if (esEntrenador()) { <button acciones type="button" class="fz-btn" (click)="nueva()">Nueva rutina</button> }
   <div class="divide-y divide-black/5">
-    @for (r of visibles(); track r.idRutina) {
+    @for (r of pag.items(); track r.idRutina) {
       <div class="px-6 py-4">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div class="min-w-0 flex-1">
@@ -15,7 +15,6 @@
             @if (puedeModificar(r)) {
               <button type="button" class="fz-btn-ghost" (click)="alternar(r)">{{ r.activa ? 'Desactivar' : 'Activar' }}</button>
               <button type="button" class="fz-btn-ghost" (click)="editar(r)" [attr.aria-label]="'Editar ' + r.nombreRutina"><app-icon name="pencil" cls="size-4" /></button>
-              <button type="button" class="fz-btn-ghost" (click)="porEliminar.set(r)" [attr.aria-label]="'Eliminar ' + r.nombreRutina"><app-icon name="trash" cls="size-4" /></button>
             }
           </div>
         </div>
@@ -28,6 +27,13 @@
                   <span class="font-bold">{{ e.nombre }}</span>
                   <span class="text-zinc-500">{{ detalle(e) }}</span>
                   @if (e.notas) { <span class="text-xs text-zinc-400">— {{ e.notas }}</span> }
+                  @if (e.videoUrl) {
+                    @if (esYoutube(e)) {
+                      <button type="button" class="text-xs font-bold text-orange-600 underline" (click)="verVideo(e)">Ver video</button>
+                    } @else {
+                      <a class="text-xs font-bold text-orange-600 underline" [href]="e.videoUrl" target="_blank" rel="noopener">Ver video</a>
+                    }
+                  }
                 </li>
               }
             </ul>
@@ -37,7 +43,16 @@
       </div>
     } @empty { <app-vacio /> }
   </div>
+  <app-paginador [pag]="pag" />
 </app-panel>
+
+@if (video(); as v) {
+  <app-modal [titulo]="v.titulo" (cerrar)="video.set(null)">
+    <div class="aspect-video overflow-hidden rounded-2xl bg-black">
+      <iframe class="size-full" [src]="v.url" [title]="'Video: ' + v.titulo" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+    </div>
+  </app-modal>
+}
 
 @if (abierto()) {
   <app-modal [titulo]="editando() ? 'Editar rutina' : 'Nueva rutina'" (cerrar)="abierto.set(false)">
@@ -72,7 +87,7 @@
             <div [formGroupName]="i" class="rounded-2xl border border-black/10 bg-zinc-50 p-3">
               <div class="grid gap-3 sm:grid-cols-[1fr_9rem_auto]">
                 <div>
-                  <input class="fz-input" formControlName="nombre" placeholder="Nombre del ejercicio" aria-label="Nombre del ejercicio" />
+                  <input class="fz-input" formControlName="nombre" maxlength="60" placeholder="Nombre del ejercicio" aria-label="Nombre del ejercicio" />
                   @if (g.get('nombre')?.touched && g.get('nombre')?.invalid) { <p class="fz-error">Obligatorio.</p> }
                 </div>
                 <select class="fz-input" formControlName="tipo" aria-label="Tipo de ejercicio">
@@ -96,7 +111,8 @@
                     <input type="number" min="1" class="fz-input" formControlName="duracionSeg" placeholder="Segundos *" aria-label="Duración en segundos" />
                   }
                 }
-                <input class="fz-input col-span-2" formControlName="notas" placeholder="Notas" aria-label="Notas" />
+                <input class="fz-input col-span-2" formControlName="notas" maxlength="200" placeholder="Notas" aria-label="Notas" />
+                <input type="url" class="fz-input col-span-2" formControlName="videoUrl" placeholder="Enlace a video de YouTube (opcional)" aria-label="Enlace a video" />
               </div>
             </div>
           }
@@ -105,7 +121,7 @@
       </div>
       <div>
         <label class="fz-label" for="nt">Notas del entrenador</label>
-        <input id="nt" class="fz-input" formControlName="notasEntrenador" />
+        <input id="nt" class="fz-input" formControlName="notasEntrenador" maxlength="300" />
       </div>
       @if (error()) { <p class="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">{{ error() }}</p> }
       <div class="flex justify-end gap-2 pt-2">
@@ -114,9 +130,4 @@
       </div>
     </form>
   </app-modal>
-}
-
-@if (porEliminar(); as r) {
-  <app-confirmar titulo="Eliminar rutina" [mensaje]="'Se eliminará la rutina «' + r.nombreRutina + '» de ' + r.miembro + '. Si solo quieres pausarla, desactívala.'"
-    [enviando]="eliminando()" (confirmar)="eliminar()" (cancelar)="porEliminar.set(null)" />
 }

@@ -3,7 +3,7 @@
 @if (cargando()) {
   <p class="py-24 text-center text-sm font-semibold text-zinc-400">Cargando…</p>
 } @else if (error()) {
-  <app-vacio [mensaje]="error()" detalle="Revisa el enlace o vuelve a la lista." />
+  <app-vacio [mensaje]="error()" detalle="Vuelve a la lista de miembros e inténtalo de nuevo." />
 } @else if (detalle(); as d) {
   <!-- Encabezado -->
   <section class="mb-6 rounded-[1.75rem] border border-black/5 bg-white p-6">
@@ -19,11 +19,11 @@
       </div>
     </div>
     <div class="mt-5 grid gap-3 sm:grid-cols-4">
-      <app-indicador etiqueta="Plan actual" [valor]="d.miembro.planActual ?? 'Ninguno'"
+      <app-indicador etiqueta="Plan actual" [valor]="d.miembro.planActual ? (d.miembro.planActual | titlecase) : 'Ninguno'"
         [detalle]="membresiaActiva() ? 'hasta el ' + (membresiaActiva()!.fechaFin | fecha: true) : ''" />
       <app-indicador etiqueta="Membresías" [valor]="d.membresias.length" detalle="en su historial" />
       <app-indicador etiqueta="Total pagado" [valor]="totalPagado() | cop" />
-      <app-indicador etiqueta="Asistencia" [valor]="asistencia() === null ? '—' : asistencia() + ' %'" [detalle]="d.inscripciones.length + ' inscripciones'" />
+      <app-indicador etiqueta="Asistencia" [valor]="asistencia() === null ? '—' : asistencia() + ' %'" [detalle]="'en ' + d.inscripciones.length + ' clases inscritas'" />
     </div>
   </section>
 
@@ -59,7 +59,7 @@
           }
           @case ('pagos') {
             @for (p of d.pagos; track p.idPago) {
-              <app-fila [principal]="p.monto | cop" [secundario]="'Pago #' + p.idPago + ' · ' + p.metodo" [meta]="p.fechaPago | fecha: true" />
+              <app-fila [principal]="p.monto | cop" [secundario]="'Pago n.º ' + p.idPago + ' · ' + p.metodo" [meta]="p.fechaPago | fecha: true" />
             } @empty { <app-vacio mensaje="Sin pagos." detalle="" /> }
           }
           @case ('inscripciones') {

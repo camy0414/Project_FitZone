@@ -3,7 +3,8 @@ import { AuthService } from '../../service/auth';
 import { DataService } from '../../service/data.service';
 import { MiembroDetalle } from '../../model/miembro';
 import { NotificacionService } from '../../service/notificacion';
-import { estadoInscripcion, hoyISO, mensajeError } from '../../service/util';
+import { estadoInscripcion, mensajeError } from '../../service/util';
+import { sesionIniciada } from '../../service/validaciones';
 
 type Seccion = 'membresias' | 'pagos' | 'inscripciones';
 
@@ -36,7 +37,8 @@ export class MiembroDetalleComponent implements OnInit {
 
   readonly totalPagado = computed(() => this.detalle()?.pagos.reduce((a, p) => a + p.monto, 0) ?? 0);
   readonly asistencia = computed(() => {
-    const pasadas = this.detalle()?.inscripciones.filter((i) => i.fecha <= hoyISO() && i.asistio !== null) ?? [];
+    // solo cuentan las sesiones que ya empezaron
+    const pasadas = this.detalle()?.inscripciones.filter((i) => sesionIniciada(i.fecha, i.horaInicio) && i.asistio !== null) ?? [];
     return pasadas.length ? Math.round((pasadas.filter((i) => i.asistio).length * 100) / pasadas.length) : null;
   });
   readonly membresiaActiva = computed(() => this.detalle()?.membresias.find((m) => m.estado === 'ACTIVA') ?? null);

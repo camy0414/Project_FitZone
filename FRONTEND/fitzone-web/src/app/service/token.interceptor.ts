@@ -2,17 +2,21 @@ import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, catchError, throwError } from 'rxjs';
-import { SessionStore } from './sesion.store';
+import { NotificacionService } from './notificacion';
+import { SessionStore, tokenVigente } from './sesion.store';
+import { mensajeError } from './util';
 
 /**
  * Le pone el token de la sesión a todas las peticiones al backend (Authorization: Bearer ...).
- * Si el backend responde 401 en cualquier petición que no sea el login (token vencido o
- * inválido), cierra la sesión y vuelve al login.
+ * - Si la sesión venció (401, o 403 con el token ya expirado), la cierra y vuelve al login.
+ * - Si falla una consulta (GET), muestra el motivo en un aviso: así ninguna pantalla queda
+ *   cargando o vacía sin explicación. Los errores al guardar los muestra cada formulario.
  */
 @Injectable()
 export class TokenInterceptor implements HttpInterceptor {
   private sesion = inject(SessionStore);
   private router = inject(Router);
+  private avisos = inject(NotificacionService);
 
   intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     const token = this.sesion.token;
@@ -22,9 +26,15 @@ export class TokenInterceptor implements HttpInterceptor {
       : req;
     return next.handle(peticion).pipe(
       catchError((e: unknown) => {
-        if (e instanceof HttpErrorResponse && e.status === 401 && !req.url.endsWith('/auth/login')) {
-          this.sesion.limpiar();
-          this.router.navigateByUrl('/login');
+        if (e instanceof HttpErrorResponse && !req.url.includes('/auth/')) {
+          const vencida = e.status === 401 || (e.status === 403 && !!this.sesion.token && !tokenVigente(this.sesion.token));
+          if (vencida) {
+            this.sesion.limpiar();
+            this.router.navigateByUrl('/login');
+            this.avisos.error('Tu sesión expiró. Vuelve a ingresar.');
+          } else if (req.method === 'GET') {
+            this.avisos.error(mensajeError(e));
+          }
         }
         return throwError(() => e);
       }),

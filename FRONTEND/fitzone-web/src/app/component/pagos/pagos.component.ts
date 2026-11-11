@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { DataService } from '../../service/data.service';
 import { Pago } from '../../model/pago';
 import { BuscadorService } from '../../service/buscador';
+import { paginar } from '../../service/paginacion';
 
 @Component({
   selector: 'app-pagos',
@@ -20,10 +21,16 @@ export class PagosComponent implements OnInit {
     const t = this.buscador.texto().toLowerCase();
     return this.lista().filter((p) => `${p.miembro} ${p.metodo}`.toLowerCase().includes(t));
   });
+  /** 15 registros por página (ver <app-paginador> al final de la lista). */
+  readonly pag = paginar(this.visibles);
   readonly total = computed(() => this.visibles().reduce((a, p) => a + p.monto, 0));
 
   ngOnInit() {
     this.buscador.texto.set('');
-    this.data.pagos().subscribe((l) => { this.lista.set(l); this.cargando.set(false); });
+    // los más recientes primero
+    this.data.pagos().subscribe({
+      next: (l) => { this.lista.set([...l].sort((a, b) => b.fechaPago.localeCompare(a.fechaPago) || b.idPago - a.idPago)); this.cargando.set(false); },
+      error: () => this.cargando.set(false),
+    });
   }
 }

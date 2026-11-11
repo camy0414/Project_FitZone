@@ -152,7 +152,7 @@
                         <app-avatar [nombre]="p.miembro" />
                         <div>
                           <p class="font-bold">{{ p.miembro }}</p>
-                          <p class="text-[11px] text-zinc-400">Pago #{{ p.idPago }}</p>
+                          <p class="text-[11px] text-zinc-400">Pago n.º {{ p.idPago }}</p>
                         </div>
                       </div>
                     </td>
@@ -215,7 +215,7 @@
           <h2 class="text-xl font-black tracking-tight">Sedes</h2>
           <p class="mt-1 text-xs font-medium text-black/60">Sedes de la cadena</p>
           <div class="mt-5 space-y-2">
-            @for (s of sedes(); track s.idSede) {
+            @for (s of sedesPagina(); track s.idSede) {
               <div class="flex items-center justify-between rounded-xl bg-black/10 px-3 py-2.5">
                 <div class="flex items-center gap-2">
                   <span class="size-2 rounded-full bg-black"></span>
@@ -225,6 +225,16 @@
               </div>
             }
           </div>
+          @if (totalPaginasSedes() > 1) {
+            <div class="mt-4 flex items-center justify-between">
+              <button type="button" class="rounded-lg bg-black/10 px-3 py-1.5 text-xs font-black transition hover:bg-black/20 disabled:opacity-40"
+                [disabled]="paginaSedes() === 0" (click)="cambiarPaginaSedes(-1)" aria-label="Sedes anteriores">‹ Anterior</button>
+              <span class="text-[11px] font-bold text-black/60">{{ paginaSedes() + 1 }} de {{ totalPaginasSedes() }}</span>
+              <button type="button" class="rounded-lg bg-black/10 px-3 py-1.5 text-xs font-black transition hover:bg-black/20 disabled:opacity-40"
+                [disabled]="paginaSedes() >= totalPaginasSedes() - 1" (click)="cambiarPaginaSedes(1)" aria-label="Más sedes">Siguiente ›</button>
+            </div>
+          }
+          <a routerLink="/sedes" class="mt-3 flex items-center justify-center gap-1 text-xs font-black text-black/70 hover:text-black">Ver todas las sedes <app-icon name="chevron-right" cls="size-4" /></a>
         </article>
       } @else {
         <article class="rounded-[1.75rem] bg-[#171718] p-6 text-white">

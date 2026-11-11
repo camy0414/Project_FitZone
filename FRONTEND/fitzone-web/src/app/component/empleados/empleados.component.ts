@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from '../../service/auth';
 import { DataService } from '../../service/data.service';
-import { LIMITES, MENSAJE_FORMATO, PATRONES } from '../../service/validaciones';
+import { LIMITES, MENSAJE_FORMATO, PATRONES, requerido } from '../../service/validaciones';
 import { Catalogo } from '../../model/catalogo';
 import { Empleado } from '../../model/empleado';
 import { Sede } from '../../model/sede';
@@ -10,6 +10,7 @@ import { ROL_LABEL, RolNombre } from '../../model/usuario';
 import { BuscadorService } from '../../service/buscador';
 import { NotificacionService } from '../../service/notificacion';
 import { mensajeError } from '../../service/util';
+import { paginar } from '../../service/paginacion';
 
 @Component({
   selector: 'app-empleados',
@@ -23,7 +24,7 @@ export class EmpleadosComponent implements OnInit {
   private toast = inject(NotificacionService);
   private fb = inject(FormBuilder);
   private buscador = inject(BuscadorService);
-  private usuario = inject(AuthService).usuario;
+  readonly usuario = inject(AuthService).usuario;
 
   readonly esAdmin = computed(() => this.usuario()?.rol === 'ADMIN_SISTEMA');
   readonly max = LIMITES.persona;
@@ -37,6 +38,8 @@ export class EmpleadosComponent implements OnInit {
     const t = this.buscador.texto().toLowerCase();
     return this.lista().filter((e) => `${e.nombreCompleto} ${e.correo} ${e.rol} ${e.sede}`.toLowerCase().includes(t));
   });
+  /** 15 registros por página (ver <app-paginador> al final de la lista). */
+  readonly pag = paginar(this.visibles);
 
   readonly abierto = signal(false);
   /** Empleado en edición; null cuando se crea uno nuevo (la contraseña solo se fija al crear). */
@@ -44,14 +47,17 @@ export class EmpleadosComponent implements OnInit {
   readonly enviando = signal(false);
   readonly error = signal('');
   readonly verClave = signal(false);
+  /** Empleado que se va a desactivar (pide confirmación). */
+  readonly porDesactivar = signal<Empleado | null>(null);
+  readonly cambiando = signal(false);
   readonly form = this.fb.nonNullable.group({
-    primerNombre: ['', [Validators.required, Validators.maxLength(LIMITES.persona.nombre), Validators.pattern(PATRONES.nombre)]],
+    primerNombre: ['', [requerido, Validators.maxLength(LIMITES.persona.nombre), Validators.pattern(PATRONES.nombre)]],
     segundoNombre: ['', [Validators.maxLength(LIMITES.persona.nombre), Validators.pattern(PATRONES.nombre)]],
-    primerApellido: ['', [Validators.required, Validators.maxLength(LIMITES.persona.apellido), Validators.pattern(PATRONES.nombre)]],
+    primerApellido: ['', [requerido, Validators.maxLength(LIMITES.persona.apellido), Validators.pattern(PATRONES.nombre)]],
     segundoApellido: ['', [Validators.maxLength(LIMITES.persona.apellido), Validators.pattern(PATRONES.nombre)]],
-    telefono: ['', [Validators.required, Validators.maxLength(LIMITES.persona.telefono), Validators.pattern(PATRONES.telefono)]],
-    correo: ['', [Validators.required, Validators.maxLength(LIMITES.persona.correo), Validators.pattern(PATRONES.correo)]],
-    clave: ['', [Validators.required, Validators.minLength(8)]],
+    telefono: ['', [requerido, Validators.maxLength(LIMITES.persona.telefono), Validators.pattern(PATRONES.telefono)]],
+    correo: ['', [requerido, Validators.maxLength(LIMITES.persona.correo), Validators.pattern(PATRONES.correo)]],
+    clave: ['', [requerido, Validators.minLength(8), Validators.maxLength(72)]],
     idRolEmpleado: [0, Validators.min(1)],
     idSede: [0, Validators.min(1)],
   });
@@ -65,7 +71,7 @@ export class EmpleadosComponent implements OnInit {
     }
   }
   cargar() {
-    this.data.empleados().subscribe((l) => { this.lista.set(l); this.cargando.set(false); });
+    this.data.empleados().subscribe({ next: (l) => { this.lista.set(l); this.cargando.set(false); }, error: () => this.cargando.set(false) });
   }
   nuevo() {
     this.editando.set(null);
@@ -98,10 +104,18 @@ export class EmpleadosComponent implements OnInit {
       error: (e) => { this.enviando.set(false); this.error.set(mensajeError(e)); },
     });
   }
+  /** Nadie puede desactivar su propia cuenta (el backend también lo impide). */
+  esYo(e: Empleado) { return e.idEmpleado === this.usuario()?.idEmpleado; }
+  /** Activar es inmediato; desactivar pide confirmación porque el empleado pierde el acceso. */
   alternar(e: Empleado) {
-    this.data.cambiarEstadoEmpleado(e.idEmpleado, !e.activo).subscribe({
-      next: (m) => { this.toast.ok(m); this.cargar(); },
-      error: (err) => this.toast.error(mensajeError(err)),
+    if (e.activo) { this.porDesactivar.set(e); return; }
+    this.cambiarEstado(e, true);
+  }
+  cambiarEstado(e: Empleado, activo: boolean) {
+    this.cambiando.set(true);
+    this.data.cambiarEstadoEmpleado(e.idEmpleado, activo).subscribe({
+      next: (m) => { this.cambiando.set(false); this.porDesactivar.set(null); this.toast.ok(m); this.cargar(); },
+      error: (err) => { this.cambiando.set(false); this.porDesactivar.set(null); this.toast.error(mensajeError(err)); },
     });
   }
 }

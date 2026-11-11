@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { ReporteIngreso } from '../../model/reporte';
+import { paginar } from '../../service/paginacion';
 
 /** Ingresos por sede y método de pago (pago ⨝ metodo_pago ⨝ miembro ⨝ sede). */
 @Component({
@@ -11,6 +12,7 @@ import { ReporteIngreso } from '../../model/reporte';
 })
 export class ReporteIngresosComponent {
   readonly filas = input.required<ReporteIngreso[]>();
+  readonly pag = paginar(this.filas);
 
   readonly total = computed(() => this.filas().reduce((a, f) => a + f.total, 0));
   readonly pagos = computed(() => this.filas().reduce((a, f) => a + f.numPagos, 0));

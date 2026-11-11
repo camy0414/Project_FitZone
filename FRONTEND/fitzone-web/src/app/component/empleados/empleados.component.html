@@ -1,17 +1,18 @@
 <app-panel [titulo]="esAdmin() ? 'Empleados' : 'Personal'" descripcion="Personal con acceso al sistema, su rol y su sede." [cargando]="cargando()">
   @if (esAdmin()) { <button acciones type="button" class="fz-btn" (click)="nuevo()">Nuevo empleado</button> }
   <div class="divide-y divide-black/5">
-    @for (e of visibles(); track e.idEmpleado) {
+    @for (e of pag.items(); track e.idEmpleado) {
       <app-fila [principal]="e.nombreCompleto" [secundario]="e.correo" [meta]="rolLabel(e.rol) + ' · ' + e.sede" [estado]="e.activo ? 'activo' : 'inactivo'">
         @if (esAdmin()) {
           <div class="flex gap-2">
             <button type="button" class="fz-btn-ghost !px-2.5" (click)="editar(e)" [attr.aria-label]="'Editar ' + e.nombreCompleto"><app-icon name="pencil" cls="size-4" /></button>
-            <button type="button" class="fz-btn-ghost" (click)="alternar(e)">{{ e.activo ? 'Desactivar' : 'Activar' }}</button>
+            @if (!esYo(e)) { <button type="button" class="fz-btn-ghost" (click)="alternar(e)">{{ e.activo ? 'Desactivar' : 'Activar' }}</button> }
           </div>
         }
       </app-fila>
     } @empty { <app-vacio /> }
   </div>
+  <app-paginador [pag]="pag" />
 </app-panel>
 
 @if (abierto()) {
@@ -53,11 +54,11 @@
       <div>
         <label class="fz-label" for="cla">Contraseña inicial * (mínimo 8 caracteres)</label>
         <div class="flex gap-2">
-          <input id="cla" [type]="verClave() ? 'text' : 'password'" class="fz-input" formControlName="clave" autocomplete="new-password" />
+          <input id="cla" [type]="verClave() ? 'text' : 'password'" class="fz-input" formControlName="clave" maxlength="72" autocomplete="new-password" />
           <button type="button" class="fz-btn-ghost shrink-0" (click)="verClave.set(!verClave())">{{ verClave() ? 'Ocultar' : 'Ver' }}</button>
         </div>
-        @if (form.controls.clave.touched && form.controls.clave.invalid) { <p class="fz-error">Debe tener al menos 8 caracteres.</p> }
-        <p class="mt-1 text-[11px] text-zinc-400">Se guarda cifrada (hash). El empleado la recibe de ti.</p>
+        @if (form.controls.clave.touched && form.controls.clave.invalid) { <p class="fz-error">Debe tener entre 8 y 72 caracteres.</p> }
+        <p class="mt-1 text-[11px] text-zinc-400">Compártela con el empleado: ingresará con su correo y esta contraseña.</p>
       </div>
       }
       <div class="grid gap-4 sm:grid-cols-2">
@@ -85,4 +86,10 @@
       </div>
     </form>
   </app-modal>
+}
+
+@if (porDesactivar(); as e) {
+  <app-confirmar titulo="Desactivar empleado" accion="Desactivar" [enviando]="cambiando()"
+    [mensaje]="e.nombreCompleto + ' ya no podrá ingresar al sistema. Puedes volver a activarlo cuando quieras.'"
+    (confirmar)="cambiarEstado(e, false)" (cancelar)="porDesactivar.set(null)" />
 }

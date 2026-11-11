@@ -1,0 +1,33 @@
+<div class="grid gap-3 px-6 py-5 sm:grid-cols-3">
+  <app-indicador etiqueta="Entrenadores" [valor]="filas().length" detalle="Con rutinas creadas" />
+  <app-indicador etiqueta="Rutinas activas" [valor]="activas()" />
+  <app-indicador etiqueta="Rutinas inactivas" [valor]="inactivas()" />
+</div>
+
+@if (filas().length) {
+  <div class="overflow-x-auto">
+    <table class="w-full min-w-[520px] text-left text-sm">
+      <thead class="border-y border-black/5 bg-zinc-50 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+        <tr>
+          <th scope="col" class="px-6 py-3">Entrenador</th>
+          <th scope="col" class="px-6 py-3 text-right">Activas</th>
+          <th scope="col" class="px-6 py-3 text-right">Inactivas</th>
+          <th scope="col" class="w-40 px-6 py-3"><span class="sr-only">Proporción</span></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-black/5">
+        @for (f of pag.items(); track f.idEmpleado) {
+          <tr>
+            <td class="px-6 py-3 font-bold">{{ f.entrenador }}</td>
+            <td class="px-6 py-3 text-right tabular-nums">{{ f.activas }}</td>
+            <td class="px-6 py-3 text-right tabular-nums text-zinc-500">{{ f.inactivas }}</td>
+            <td class="px-6 py-3"><app-barra [valor]="f.activas + f.inactivas" [maximo]="maximo()" /></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <app-paginador [pag]="pag" />
+} @else {
+  <app-vacio mensaje="Aún no hay rutinas creadas." detalle="" />
+}
