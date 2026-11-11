@@ -29,7 +29,11 @@
         </div>
         <div>
           <label class="fz-label" for="fa">Fecha de adquisición *</label>
-          <input id="fa" type="date" class="fz-input" [max]="hoy" formControlName="fechaAdquisicion" />
+          <input id="fa" type="date" class="fz-input" [min]="fechaMinima" [max]="hoy" formControlName="fechaAdquisicion" />
+          @if (form.controls.fechaAdquisicion.touched && form.controls.fechaAdquisicion.invalid) {
+            <p class="fz-error">{{ form.controls.fechaAdquisicion.hasError('futura') ? 'No puede ser una fecha futura.'
+              : form.controls.fechaAdquisicion.hasError('antigua') ? 'Revisa el año de la fecha.' : 'Elige la fecha.' }}</p>
+          }
         </div>
       </div>
       @if (esAdmin()) {

@@ -47,12 +47,12 @@
 
     <label class="flex cursor-pointer items-center gap-2 text-sm font-bold">
       <input type="checkbox" [checked]="conMedica()" (change)="fijarMedica(!conMedica())" [disabled]="!!infoMedica()" class="size-4 accent-orange-500" />
-      {{ infoMedica() ? 'Información médica (se puede actualizar, no eliminar)' : esEdicion() ? 'Agregar información médica' : 'Registrar información médica (opcional)' }}
+      {{ infoMedica() ? 'Información médica' : esEdicion() ? 'Agregar información médica' : 'Registrar información médica (opcional)' }}
     </label>
     @if (conMedica()) {
       <div class="grid gap-4 rounded-2xl border border-black/5 bg-zinc-50 p-4 sm:grid-cols-2">
         <div>
-          <label class="fz-label" for="ce">Contacto de emergencia *</label>
+          <label class="fz-label" for="ce">Teléfono de emergencia *</label>
           <input id="ce" class="fz-input" inputmode="tel" placeholder="Teléfono" formControlName="contactoEmergencia" [maxlength]="max.contactoEmergencia" />
           @if (form.controls.contactoEmergencia.touched && form.controls.contactoEmergencia.invalid) { <p class="fz-error">{{ form.controls.contactoEmergencia.hasError('required') ? 'Obligatorio.' : msg.telefono }}</p> }
         </div>

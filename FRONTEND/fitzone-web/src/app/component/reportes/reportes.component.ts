@@ -4,8 +4,7 @@ import { DataService } from '../../service/data.service';
 import { FiltroReporte, MembresiaPorVencer, ReporteIngreso, ReporteMantenimiento, ReporteOcupacion } from '../../model/reporte';
 import { Sede } from '../../model/sede';
 import { RolNombre } from '../../model/usuario';
-import { NotificacionService } from '../../service/notificacion';
-import { isoDesplazada, mensajeError } from '../../service/util';
+import { isoDesplazada } from '../../service/util';
 
 type Pestana = 'ingresos' | 'ocupacion' | 'vencer' | 'mantenimiento';
 
@@ -28,7 +27,6 @@ const PESTANAS: DefPestana[] = [
 })
 export class ReportesComponent implements OnInit {
   private data = inject(DataService);
-  private toast = inject(NotificacionService);
   readonly usuario = inject(AuthService).usuario;
 
   readonly esAdmin = computed(() => this.usuario()?.rol === 'ADMIN_SISTEMA');
@@ -43,7 +41,7 @@ export class ReportesComponent implements OnInit {
   readonly idSede = signal<number | null>(null);
   readonly dias = signal(7);
   readonly opcionesDias = [7, 15, 30];
-  readonly rangoValido = computed(() => this.desde() <= this.hasta());
+  readonly rangoValido = computed(() => !!this.desde() && !!this.hasta() && this.desde() <= this.hasta());
 
   // Resultados
   readonly cargando = signal(false);
@@ -68,7 +66,8 @@ export class ReportesComponent implements OnInit {
   cargar() {
     if (!this.rangoValido()) return;
     const f: FiltroReporte = { desde: this.desde(), hasta: this.hasta(), idSede: this.idSede() };
-    const error = (e: unknown) => { this.cargando.set(false); this.toast.error(mensajeError(e)); };
+    // el motivo del error lo muestra el interceptor en un aviso
+    const error = () => this.cargando.set(false);
     this.cargando.set(true);
     switch (this.pestana()) {
       case 'ingresos':

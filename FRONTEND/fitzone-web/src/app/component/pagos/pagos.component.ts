@@ -24,6 +24,6 @@ export class PagosComponent implements OnInit {
 
   ngOnInit() {
     this.buscador.texto.set('');
-    this.data.pagos().subscribe((l) => { this.lista.set(l); this.cargando.set(false); });
+    this.data.pagos().subscribe({ next: (l) => { this.lista.set(l); this.cargando.set(false); }, error: () => this.cargando.set(false) });
   }
 }

@@ -8,6 +8,7 @@ import { Miembro } from '../../model/miembro';
 import { BuscadorService } from '../../service/buscador';
 import { NotificacionService } from '../../service/notificacion';
 import { mensajeError } from '../../service/util';
+import { MONTO_MAXIMO, requerido } from '../../service/validaciones';
 
 @Component({
   selector: 'app-membresias',
@@ -41,7 +42,7 @@ export class MembresiasComponent implements OnInit {
     idMiembro: [0, Validators.min(1)],
     idTipoPlan: [0, Validators.min(1)],
     idMetodoPago: [0, Validators.min(1)],
-    monto: [0, Validators.min(1)],
+    monto: [null as number | null, [requerido, Validators.min(1), Validators.max(MONTO_MAXIMO)]],
   });
 
   ngOnInit() {
@@ -53,13 +54,13 @@ export class MembresiasComponent implements OnInit {
       this.data.metodosPago().subscribe((l) => this.metodos.set(l));
     }
   }
-  cargar() { this.data.membresias().subscribe((l) => { this.lista.set(l); this.cargando.set(false); }); }
-  nueva() { this.form.reset({ idMiembro: 0, idTipoPlan: 0, idMetodoPago: 0, monto: 0 }); this.error.set(''); this.abierto.set(true); }
+  cargar() { this.data.membresias().subscribe({ next: (l) => { this.lista.set(l); this.cargando.set(false); }, error: () => this.cargando.set(false) }); }
+  nueva() { this.form.reset({ idMiembro: 0, idTipoPlan: 0, idMetodoPago: 0, monto: null }); this.error.set(''); this.abierto.set(true); }
   guardar() {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.enviando.set(true); this.error.set('');
     const v = this.form.getRawValue();
-    this.data.renovarMembresia({ idMiembro: +v.idMiembro, idTipoPlan: +v.idTipoPlan, idMetodoPago: +v.idMetodoPago, monto: +v.monto }).subscribe({
+    this.data.renovarMembresia({ idMiembro: +v.idMiembro, idTipoPlan: +v.idTipoPlan, idMetodoPago: +v.idMetodoPago, monto: +v.monto! }).subscribe({
       next: (m) => { this.enviando.set(false); this.abierto.set(false); this.toast.ok(m); this.cargar(); },
       error: (e) => { this.enviando.set(false); this.error.set(mensajeError(e)); },
     });

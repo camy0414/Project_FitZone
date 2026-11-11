@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DataService } from '../../service/data.service';
 import { Auditoria } from '../../model/auditoria';
+import { ROL_LABEL, RolNombre } from '../../model/usuario';
 import { BuscadorService } from '../../service/buscador';
 import { mensajeError } from '../../service/util';
 
@@ -29,7 +30,7 @@ export class AuditoriaComponent implements OnInit {
     return this.lista().filter((a) =>
       (!this.tabla() || a.tabla === this.tabla()) &&
       (!this.operacion() || a.operacion === this.operacion()) &&
-      `${a.tabla} ${a.operacion} ${a.idRegistro} ${a.empleado ?? ''} ${a.rolBd}`.toLowerCase().includes(t));
+      `${this.registro(a.tabla)} ${this.accion(a.operacion)} ${a.idRegistro} ${a.empleado ?? ''} ${this.cargo(a.rolBd)}`.toLowerCase().includes(t));
   });
 
   ngOnInit() {
@@ -40,8 +41,22 @@ export class AuditoriaComponent implements OnInit {
     });
   }
 
+  /** 'INSERT' -> 'Registro', 'UPDATE' -> 'Modificación'. */
   accion(op: string) {
-    return ({ INSERT: 'Creación', UPDATE: 'Modificación', DELETE: 'Eliminación' } as Record<string, string>)[op] ?? op;
+    return ({ INSERT: 'Registro', UPDATE: 'Modificación', DELETE: 'Eliminación' } as Record<string, string>)[op] ?? op;
+  }
+  /** 'membresia' -> 'Membresía'. */
+  registro(tabla: string) {
+    return ({ pago: 'Pago', membresia: 'Membresía', empleado: 'Empleado' } as Record<string, string>)[tabla] ?? tabla;
+  }
+  /** 'rol_recepcionista_sede' -> 'Recepcionista de sede'. */
+  cargo(rolBd: string) {
+    const rol = (rolBd ?? '').replace(/^rol_/, '').toUpperCase() as RolNombre;
+    return ROL_LABEL[rol] ?? 'Sistema';
+  }
+  /** Texto de la fila: «Registro de pago n.º 12». */
+  titulo(a: Auditoria) {
+    return `${this.accion(a.operacion)} de ${this.registro(a.tabla).toLowerCase()} n.º ${a.idRegistro}`;
   }
 
   hora(fecha: string) { return fecha.slice(11, 16); }

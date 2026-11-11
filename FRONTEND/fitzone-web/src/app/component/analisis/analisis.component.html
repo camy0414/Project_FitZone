@@ -1,9 +1,8 @@
 <section class="mb-6 rounded-[1.75rem] bg-[#171718] px-6 py-6 text-white">
-  <p class="text-xs font-bold uppercase tracking-[.2em] text-orange-400">MongoDB · agregaciones</p>
+  <p class="text-xs font-bold uppercase tracking-[.2em] text-orange-400">Entrenamiento</p>
   <h1 class="mt-2 text-2xl font-black tracking-tight">Análisis de rutinas y progreso</h1>
   <p class="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
-    Estos resultados salen de pipelines <code class="text-orange-300">aggregate</code> sobre las colecciones
-    <b>rutinas</b> y <b>progreso</b>. Usa «Ver consulta» en cada bloque para ver el pipeline.
+    Evolución física de los miembros, promedios por sede y cómo se están usando las rutinas de entrenamiento.
   </p>
 </section>
 
@@ -14,9 +13,7 @@
 } @else if (datos(); as d) {
   <div class="grid gap-6 xl:grid-cols-2">
     <!-- Tendencia por miembro -->
-    <app-panel titulo="Tendencia de peso" descripcion="$sort + $group con $first / $last por miembro.">
-      <button acciones type="button" class="fz-btn-ghost" (click)="verConsulta('tendencias')">{{ consultas().has('tendencias') ? 'Ocultar consulta' : 'Ver consulta' }}</button>
-      @if (consultas().has('tendencias')) { <pre class="mx-6 mt-4 overflow-x-auto rounded-xl bg-zinc-900 p-4 text-[11px] leading-5 text-zinc-100">{{ pipelines.tendencias }}</pre> }
+    <app-panel titulo="Tendencia de peso" descripcion="Peso de la primera y la última medición de cada miembro.">
       @if (d.tendencias.length) {
         <div class="overflow-x-auto">
           <table class="w-full min-w-[520px] text-left text-sm">
@@ -38,13 +35,11 @@
             </tbody>
           </table>
         </div>
-      } @else { <app-vacio mensaje="Sin mediciones registradas." detalle="" /> }
+      } @else { <app-vacio mensaje="Aún no hay mediciones registradas." detalle="" /> }
     </app-panel>
 
     <!-- Promedios por sede -->
-    <app-panel titulo="Promedio por sede" descripcion="Última medición de cada miembro y $avg por sede.">
-      <button acciones type="button" class="fz-btn-ghost" (click)="verConsulta('promediosSede')">{{ consultas().has('promediosSede') ? 'Ocultar consulta' : 'Ver consulta' }}</button>
-      @if (consultas().has('promediosSede')) { <pre class="mx-6 mt-4 overflow-x-auto rounded-xl bg-zinc-900 p-4 text-[11px] leading-5 text-zinc-100">{{ pipelines.promediosSede }}</pre> }
+    <app-panel titulo="Promedio por sede" descripcion="Promedio de la última medición de los miembros de cada sede.">
       <div class="grid gap-3 px-6 py-5 sm:grid-cols-2">
         @for (p of d.promediosSede; track p.idSede) {
           <article class="rounded-2xl border border-black/5 bg-zinc-50 p-4">
@@ -55,14 +50,12 @@
               <div><p class="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Grasa</p><p class="text-lg font-black">{{ p.grasaPromedio ?? '—' }} %</p></div>
             </div>
           </article>
-        } @empty { <app-vacio mensaje="Sin datos." detalle="" /> }
+        } @empty { <app-vacio mensaje="Aún no hay mediciones registradas." detalle="" /> }
       </div>
     </app-panel>
 
     <!-- Ejercicios más usados -->
-    <app-panel titulo="Ejercicios más asignados" descripcion="$unwind de ejercicios en rutinas activas y $group por nombre.">
-      <button acciones type="button" class="fz-btn-ghost" (click)="verConsulta('ejercicios')">{{ consultas().has('ejercicios') ? 'Ocultar consulta' : 'Ver consulta' }}</button>
-      @if (consultas().has('ejercicios')) { <pre class="mx-6 mt-4 overflow-x-auto rounded-xl bg-zinc-900 p-4 text-[11px] leading-5 text-zinc-100">{{ pipelines.ejercicios }}</pre> }
+    <app-panel titulo="Ejercicios más asignados" descripcion="Ejercicios que aparecen en más rutinas activas.">
       <ul class="space-y-3 px-6 py-5">
         @for (e of d.ejercicios; track e.nombre) {
           <li>
@@ -77,9 +70,7 @@
     </app-panel>
 
     <!-- Rutinas por entrenador -->
-    <app-panel titulo="Rutinas por entrenador" descripcion="$group por entrenador con $sum condicional ($cond).">
-      <button acciones type="button" class="fz-btn-ghost" (click)="verConsulta('rutinasEntrenador')">{{ consultas().has('rutinasEntrenador') ? 'Ocultar consulta' : 'Ver consulta' }}</button>
-      @if (consultas().has('rutinasEntrenador')) { <pre class="mx-6 mt-4 overflow-x-auto rounded-xl bg-zinc-900 p-4 text-[11px] leading-5 text-zinc-100">{{ pipelines.rutinasEntrenador }}</pre> }
+    <app-panel titulo="Rutinas por entrenador" descripcion="Rutinas activas e inactivas que ha creado cada entrenador.">
       <ul class="space-y-3 px-6 py-5">
         @for (r of d.rutinasEntrenador; track r.idEmpleado) {
           <li>
@@ -89,7 +80,7 @@
             </div>
             <app-barra [valor]="r.activas + r.inactivas" [maximo]="maxRutinas()" />
           </li>
-        } @empty { <app-vacio mensaje="Sin rutinas." detalle="" /> }
+        } @empty { <app-vacio mensaje="Aún no hay rutinas creadas." detalle="" /> }
       </ul>
     </app-panel>
   </div>

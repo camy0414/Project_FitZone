@@ -16,7 +16,7 @@
     <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-4">
       <div>
         <label class="fz-label" for="eq">Equipo *</label>
-        <select id="eq" class="fz-input" formControlName="idEquipo">
+        <select id="eq" class="fz-input" formControlName="idEquipo" (change)="alCambiarEquipo()">
           <option [ngValue]="0" disabled>Selecciona…</option>
           @for (e of equipos(); track e.idEquipo) { <option [ngValue]="e.idEquipo">{{ e.nombre }} — {{ e.sede }}</option> }
         </select>
@@ -26,11 +26,17 @@
         <div>
           <label class="fz-label" for="co">Costo (COP) *</label>
           <input id="co" type="number" min="0" step="1000" class="fz-input" formControlName="costo" />
-          @if (form.controls.costo.touched && form.controls.costo.invalid) { <p class="fz-error">Obligatorio y no puede ser negativo.</p> }
+          @if (form.controls.costo.touched && form.controls.costo.invalid) {
+            <p class="fz-error">{{ form.controls.costo.hasError('max') ? 'El costo es demasiado alto.' : 'Escribe el costo (0 si fue gratis). No puede ser negativo.' }}</p>
+          }
         </div>
         <div>
           <label class="fz-label" for="fe">Fecha del mantenimiento *</label>
-          <input id="fe" type="date" class="fz-input" [max]="hoy" formControlName="fechaMantenimiento" />
+          <input id="fe" type="date" class="fz-input" [min]="compraEquipo()" [max]="hoy" formControlName="fechaMantenimiento" />
+          @if (form.controls.fechaMantenimiento.touched && form.controls.fechaMantenimiento.invalid) {
+            <p class="fz-error">{{ form.controls.fechaMantenimiento.hasError('futura') ? 'No puede ser una fecha futura.'
+              : form.controls.fechaMantenimiento.hasError('antigua') ? 'No puede ser anterior a la compra del equipo.' : 'Elige la fecha.' }}</p>
+          }
         </div>
       </div>
       <div>

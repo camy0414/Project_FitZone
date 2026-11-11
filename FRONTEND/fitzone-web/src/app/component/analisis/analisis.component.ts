@@ -2,9 +2,8 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { DataService } from '../../service/data.service';
 import { AnalisisMongo } from '../../model/analisis';
 import { mensajeError } from '../../service/util';
-import { ClavePipeline, PIPELINES } from './pipelines';
 
-/** Resultados de las agregaciones sobre las colecciones de MongoDB (rutinas y progreso). */
+/** Análisis de rutinas y progreso físico (agregaciones sobre MongoDB). */
 @Component({
   selector: 'app-analisis',
   standalone: false,
@@ -18,9 +17,6 @@ export class AnalisisComponent implements OnInit {
   readonly cargando = signal(true);
   readonly error = signal('');
   readonly datos = signal<AnalisisMongo | null>(null);
-  /** Pipelines desplegados en pantalla. */
-  readonly consultas = signal<Set<ClavePipeline>>(new Set());
-  readonly pipelines = PIPELINES;
 
   readonly maxEjercicio = computed(() => Math.max(0, ...(this.datos()?.ejercicios.map((e) => e.rutinas) ?? [])));
   readonly maxRutinas = computed(() => Math.max(0, ...(this.datos()?.rutinasEntrenador.map((r) => r.activas + r.inactivas) ?? [])));
@@ -32,8 +28,5 @@ export class AnalisisComponent implements OnInit {
     });
   }
 
-  verConsulta(k: ClavePipeline) {
-    this.consultas.update((s) => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n; });
-  }
   signo(n: number) { return n > 0 ? `+${n}` : `${n}`; }
 }

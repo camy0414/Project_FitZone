@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { DataService } from '../../service/data.service';
-import { LIMITES, MENSAJE_FORMATO, PATRONES } from '../../service/validaciones';
+import { LIMITES, MENSAJE_FORMATO, PATRONES, requerido } from '../../service/validaciones';
 import { Sede } from '../../model/sede';
 import { BuscadorService } from '../../service/buscador';
 import { NotificacionService } from '../../service/notificacion';
@@ -35,9 +35,9 @@ export class SedesComponent implements OnInit {
   readonly enviando = signal(false);
   readonly error = signal('');
   readonly form = this.fb.nonNullable.group({
-    nombre: ['', [Validators.required, Validators.maxLength(LIMITES.sede.nombre)]],
-    direccion: ['', [Validators.required, Validators.maxLength(LIMITES.sede.direccion)]],
-    telefono: ['', [Validators.required, Validators.maxLength(LIMITES.sede.telefono), Validators.pattern(PATRONES.telefono)]],
+    nombre: ['', [requerido, Validators.maxLength(LIMITES.sede.nombre)]],
+    direccion: ['', [requerido, Validators.maxLength(LIMITES.sede.direccion)]],
+    telefono: ['', [requerido, Validators.maxLength(LIMITES.sede.telefono), Validators.pattern(PATRONES.telefono)]],
   });
 
   ngOnInit() {
@@ -45,7 +45,7 @@ export class SedesComponent implements OnInit {
     this.cargar();
   }
   cargar() {
-    this.data.sedes().subscribe((l) => { this.lista.set(l); this.cargando.set(false); });
+    this.data.sedes().subscribe({ next: (l) => { this.lista.set(l); this.cargando.set(false); }, error: () => this.cargando.set(false) });
   }
   nueva() { this.editando.set(null); this.form.reset(); this.error.set(''); this.abierto.set(true); }
   editar(s: Sede) {

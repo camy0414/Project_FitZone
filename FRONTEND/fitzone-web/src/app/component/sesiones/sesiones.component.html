@@ -3,7 +3,7 @@
   <div class="divide-y divide-black/5">
     @for (s of visibles(); track s.numeroSesion) {
       <app-fila [principal]="s.clase" [secundario]="(s.fecha | fecha) + ' · ' + s.horaInicio + ' – ' + s.horaFin + ' · ' + s.entrenador"
-        [meta]="s.sede + ' · ' + s.inscritos + '/' + s.cupoMaximo + ' inscritos'" [estado]="s.fecha < hoy ? 'completado' : (s.inscritos >= s.cupoMaximo ? 'llena' : 'programada')" />
+        [meta]="s.sede + ' · ' + s.inscritos + '/' + s.cupoMaximo + ' inscritos'" [estado]="estado(s)" />
     } @empty { <app-vacio /> }
   </div>
 </app-panel>
@@ -22,7 +22,8 @@
       <div class="grid gap-4 sm:grid-cols-3">
         <div>
           <label class="fz-label" for="fe">Fecha *</label>
-          <input id="fe" type="date" class="fz-input" [min]="hoy" formControlName="fecha" />
+          <input id="fe" type="date" class="fz-input" [min]="hoy" [max]="hasta" formControlName="fecha" />
+          @if (form.controls.fecha.touched && form.controls.fecha.invalid) { <p class="fz-error">Obligatorio.</p> }
         </div>
         <div>
           <label class="fz-label" for="hi">Inicio *</label>

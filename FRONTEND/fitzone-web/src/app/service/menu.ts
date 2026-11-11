@@ -21,7 +21,7 @@ export const MENU: Record<RolNombre, ItemMenu[]> = {
     { etiqueta: 'Mantenimiento', ruta: '/mantenimiento', icono: 'wrench' },
     { etiqueta: 'Rutinas', ruta: '/rutinas', icono: 'activity' },
     { etiqueta: 'Progreso físico', ruta: '/progreso', icono: 'trending-up' },
-    { etiqueta: 'Análisis (MongoDB)', ruta: '/analisis', icono: 'database' },
+    { etiqueta: 'Análisis', ruta: '/analisis', icono: 'zap' },
     { etiqueta: 'Reportes', ruta: '/reportes', icono: 'chart' },
     { etiqueta: 'Auditoría', ruta: '/auditoria', icono: 'lock' },
   ],
@@ -37,7 +37,7 @@ export const MENU: Record<RolNombre, ItemMenu[]> = {
     { etiqueta: 'Personal', ruta: '/empleados', icono: 'user-cog' },
     { etiqueta: 'Rutinas', ruta: '/rutinas', icono: 'activity' },
     { etiqueta: 'Progreso físico', ruta: '/progreso', icono: 'trending-up' },
-    { etiqueta: 'Análisis (MongoDB)', ruta: '/analisis', icono: 'database' },
+    { etiqueta: 'Análisis', ruta: '/analisis', icono: 'zap' },
     { etiqueta: 'Reportes', ruta: '/reportes', icono: 'chart' },
   ],
   RECEPCIONISTA_SEDE: [
@@ -56,7 +56,7 @@ export const MENU: Record<RolNombre, ItemMenu[]> = {
     { etiqueta: 'Asistencia', ruta: '/asistencia', icono: 'clipboard' },
     { etiqueta: 'Rutinas', ruta: '/rutinas', icono: 'activity' },
     { etiqueta: 'Progreso físico', ruta: '/progreso', icono: 'trending-up' },
-    { etiqueta: 'Análisis (MongoDB)', ruta: '/analisis', icono: 'database' },
+    { etiqueta: 'Análisis', ruta: '/analisis', icono: 'zap' },
     { etiqueta: 'Mis reportes', ruta: '/reportes', icono: 'chart' },
   ],
 };

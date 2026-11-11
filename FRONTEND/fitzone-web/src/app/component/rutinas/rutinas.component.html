@@ -1,4 +1,4 @@
-<app-panel [titulo]="esEntrenador() ? 'Rutinas de mis miembros' : 'Rutinas'" descripcion="Rutinas de entrenamiento guardadas en MongoDB, con sus ejercicios." [cargando]="cargando()">
+<app-panel [titulo]="esEntrenador() ? 'Rutinas de mis miembros' : 'Rutinas'" descripcion="Rutinas de entrenamiento de los miembros, con sus ejercicios." [cargando]="cargando()">
   @if (esEntrenador()) { <button acciones type="button" class="fz-btn" (click)="nueva()">Nueva rutina</button> }
   <div class="divide-y divide-black/5">
     @for (r of visibles(); track r.idRutina) {
@@ -72,7 +72,7 @@
             <div [formGroupName]="i" class="rounded-2xl border border-black/10 bg-zinc-50 p-3">
               <div class="grid gap-3 sm:grid-cols-[1fr_9rem_auto]">
                 <div>
-                  <input class="fz-input" formControlName="nombre" placeholder="Nombre del ejercicio" aria-label="Nombre del ejercicio" />
+                  <input class="fz-input" formControlName="nombre" maxlength="60" placeholder="Nombre del ejercicio" aria-label="Nombre del ejercicio" />
                   @if (g.get('nombre')?.touched && g.get('nombre')?.invalid) { <p class="fz-error">Obligatorio.</p> }
                 </div>
                 <select class="fz-input" formControlName="tipo" aria-label="Tipo de ejercicio">
@@ -96,7 +96,7 @@
                     <input type="number" min="1" class="fz-input" formControlName="duracionSeg" placeholder="Segundos *" aria-label="Duración en segundos" />
                   }
                 }
-                <input class="fz-input col-span-2" formControlName="notas" placeholder="Notas" aria-label="Notas" />
+                <input class="fz-input col-span-2" formControlName="notas" maxlength="200" placeholder="Notas" aria-label="Notas" />
                 <input type="url" class="fz-input col-span-2" formControlName="videoUrl" placeholder="Enlace a video (opcional)" aria-label="Enlace a video" />
               </div>
             </div>
@@ -106,7 +106,7 @@
       </div>
       <div>
         <label class="fz-label" for="nt">Notas del entrenador</label>
-        <input id="nt" class="fz-input" formControlName="notasEntrenador" />
+        <input id="nt" class="fz-input" formControlName="notasEntrenador" maxlength="300" />
       </div>
       @if (error()) { <p class="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">{{ error() }}</p> }
       <div class="flex justify-end gap-2 pt-2">

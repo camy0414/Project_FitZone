@@ -1,4 +1,4 @@
-// MongoDB: resultados de los pipelines de agregación.
+// Análisis de rutinas y progreso (resultados de las agregaciones de MongoDB).
 import { TipoEjercicio } from './rutina';
 
 /** $sort por fecha + $group por miembro con $first / $last. */

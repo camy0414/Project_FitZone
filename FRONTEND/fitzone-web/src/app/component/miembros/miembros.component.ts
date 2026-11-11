@@ -31,7 +31,7 @@ export class MiembrosComponent implements OnInit {
     this.buscador.texto.set('');
     this.cargar();
   }
-  cargar() { this.data.miembros().subscribe((l) => { this.lista.set(l); this.cargando.set(false); }); }
+  cargar() { this.data.miembros().subscribe({ next: (l) => { this.lista.set(l); this.cargando.set(false); }, error: () => this.cargando.set(false) }); }
   alGuardar(mensaje: string) {
     this.abierto.set(false);
     this.toast.ok(mensaje);

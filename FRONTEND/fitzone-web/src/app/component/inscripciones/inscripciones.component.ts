@@ -3,7 +3,8 @@ import { DataService } from '../../service/data.service';
 import { Miembro } from '../../model/miembro';
 import { Inscripcion, Sesion } from '../../model/sesion';
 import { NotificacionService } from '../../service/notificacion';
-import { estadoInscripcion, hoyISO, mensajeError, porFechaHora } from '../../service/util';
+import { estadoInscripcion, mensajeError, porFechaHora } from '../../service/util';
+import { sesionIniciada } from '../../service/validaciones';
 
 @Component({
   selector: 'app-inscripciones',
@@ -26,8 +27,8 @@ export class InscripcionesComponent implements OnInit {
   readonly enviando = signal(false);
   readonly error = signal('');
 
-  /** Solo se inscribe en sesiones de hoy en adelante. */
-  readonly proximas = computed(() => this.sesiones().filter((s) => s.fecha >= hoyISO()));
+  /** Solo se inscribe en sesiones que aún no han empezado (regla del trigger de inscripción). */
+  readonly proximas = computed(() => this.sesiones().filter((s) => !sesionIniciada(s.fecha, s.horaInicio)));
   readonly sesion = computed(() => this.sesiones().find((s) => s.numeroSesion === this.numero()));
   readonly llena = computed(() => { const s = this.sesion(); return !!s && s.inscritos >= s.cupoMaximo; });
   /**
@@ -46,14 +47,19 @@ export class InscripcionesComponent implements OnInit {
       this.miembros.set([...l].sort((a, b) => a.nombreCompleto.localeCompare(b.nombreCompleto))));
   }
   private cargarSesiones() {
-    this.data.sesiones().subscribe((l) => { this.sesiones.set(porFechaHora(l)); this.cargando.set(false); });
+    this.data.sesiones().subscribe({ next: (l) => { this.sesiones.set(porFechaHora(l)); this.cargando.set(false); }, error: () => this.cargando.set(false) });
   }
   elegir(n: number) {
     this.numero.set(+n); this.idMiembro.set(0); this.error.set('');
     this.inscritos.set([]);
     if (+n) this.recargar();
   }
-  private recargar() { this.data.inscripciones(this.numero()).subscribe((l) => this.inscritos.set(l)); }
+  private recargar() {
+    const s = this.sesion();
+    // la sesión elegida aún no empieza: sus inscritos se muestran como «inscrito»
+    this.data.inscripciones(this.numero()).subscribe((l) =>
+      this.inscritos.set(l.map((i) => ({ ...i, fecha: i.fecha ?? s?.fecha, horaInicio: i.horaInicio ?? s?.horaInicio }))));
+  }
   inscribir() {
     if (!this.numero() || !this.idMiembro()) { this.error.set('Selecciona una sesión y un miembro.'); return; }
     this.enviando.set(true); this.error.set('');

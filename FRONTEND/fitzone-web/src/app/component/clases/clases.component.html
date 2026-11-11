@@ -1,4 +1,4 @@
-<app-panel [titulo]="esEntrenador() ? 'Mis clases' : 'Clases'" descripcion="Clases del catálogo, su cupo máximo y su entrenador." [cargando]="cargando()">
+<app-panel [titulo]="esEntrenador() ? 'Mis clases' : 'Clases'" descripcion="Clases que ofrece el gimnasio, su cupo máximo y su entrenador." [cargando]="cargando()">
   @if (puedeCrear()) { <button acciones type="button" class="fz-btn" (click)="nueva()">Nueva clase</button> }
   <div class="divide-y divide-black/5">
     @for (c of visibles(); track c.idClase) {
@@ -23,8 +23,8 @@
       </div>
       <div>
         <label class="fz-label" for="cup">Cupo máximo *</label>
-        <input id="cup" type="number" min="1" class="fz-input" formControlName="cupoMaximo" />
-        @if (form.controls.cupoMaximo.touched && form.controls.cupoMaximo.invalid) { <p class="fz-error">Debe ser al menos 1.</p> }
+        <input id="cup" type="number" min="1" [max]="cupoMaximo" step="1" class="fz-input" formControlName="cupoMaximo" />
+        @if (form.controls.cupoMaximo.touched && form.controls.cupoMaximo.invalid) { <p class="fz-error">Escribe un número entero entre 1 y {{ cupoMaximo }}.</p> }
       </div>
       @if (esAdmin()) {
         <div>

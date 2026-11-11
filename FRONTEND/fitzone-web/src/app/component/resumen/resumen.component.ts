@@ -9,6 +9,7 @@ import { Pago } from '../../model/pago';
 import { Sede } from '../../model/sede';
 import { Sesion } from '../../model/sesion';
 import { isoDesplazada as isoHoy, porFechaHora } from '../../service/util';
+import { sesionIniciada } from '../../service/validaciones';
 const DIAS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
 @Component({
@@ -50,8 +51,9 @@ export class ResumenComponent implements OnInit {
     this.pagos().filter((p) => p.fechaPago >= isoHoy(-30)).reduce((s, p) => s + p.monto, 0),
   );
   readonly sesionesHoy = computed(() => this.sesiones().filter((s) => s.fecha === this.hoy).length);
+  /** Sesiones que aún no terminan, de la más cercana a la más lejana. */
   readonly proximas = computed(() =>
-    porFechaHora(this.sesiones().filter((s) => s.fecha >= this.hoy)).slice(0, 4),
+    porFechaHora(this.sesiones().filter((s) => !sesionIniciada(s.fecha, s.horaFin))).slice(0, 4),
   );
   /** Equipos con algún mantenimiento en los últimos 30 días (dato de mantenimiento_equipo). */
   readonly mantenidos30 = computed(() =>
@@ -99,14 +101,18 @@ export class ResumenComponent implements OnInit {
     if (this.verEquipos()) r['equipos'] = this.data.equipos();
     if (this.esAdmin()) r['sedes'] = this.data.sedes();
 
-    forkJoin(r).subscribe((res: any) => {
-      this.sesiones.set(res.sesiones ?? []);
-      this.miembros.set(res.miembros ?? []);
-      this.membresias.set(res.membresias ?? []);
-      this.pagos.set(res.pagos ?? []);
-      this.equipos.set(res.equipos ?? []);
-      this.sedes.set(res.sedes ?? []);
-      this.cargando.set(false);
+    forkJoin(r).subscribe({
+      next: (res: any) => {
+        this.sesiones.set(res.sesiones ?? []);
+        this.miembros.set(res.miembros ?? []);
+        this.membresias.set(res.membresias ?? []);
+        this.pagos.set(res.pagos ?? []);
+        this.equipos.set(res.equipos ?? []);
+        this.sedes.set(res.sedes ?? []);
+        this.cargando.set(false);
+      },
+      // el aviso con el motivo lo muestra el interceptor; el resumen queda con lo que haya
+      error: () => this.cargando.set(false),
     });
   }
 }

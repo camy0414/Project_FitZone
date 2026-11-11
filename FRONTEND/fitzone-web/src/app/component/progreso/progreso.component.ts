@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
+import { fechaHasta, requerido } from '../../service/validaciones';
 import { AuthService } from '../../service/auth';
 import { DataService } from '../../service/data.service';
 import { Miembro } from '../../model/miembro';
@@ -65,14 +66,14 @@ export class ProgresoComponent implements OnInit {
   readonly error = signal('');
   readonly form = this.fb.nonNullable.group({
     idMiembro: [0, Validators.min(1)],
-    fecha: [hoyISO(), Validators.required],
-    pesoKg: [null as number | null, [Validators.required, Validators.min(20), Validators.max(400)]],
+    fecha: [hoyISO(), [requerido, fechaHasta(hoyISO)]],
+    pesoKg: [null as number | null, [requerido, Validators.min(20), Validators.max(400)]],
     grasaPct: [null as number | null, [Validators.min(2), Validators.max(70)]],
-    cinturaCm: [null as number | null],
-    pechoCm: [null as number | null],
-    brazoCm: [null as number | null],
-    caderaCm: [null as number | null],
-    notas: [''],
+    cinturaCm: [null as number | null, [Validators.min(10), Validators.max(300)]],
+    pechoCm: [null as number | null, [Validators.min(10), Validators.max(300)]],
+    brazoCm: [null as number | null, [Validators.min(10), Validators.max(300)]],
+    caderaCm: [null as number | null, [Validators.min(10), Validators.max(300)]],
+    notas: ['', Validators.maxLength(200)],
   });
 
   ngOnInit() {
@@ -80,10 +81,13 @@ export class ProgresoComponent implements OnInit {
     if (this.esEntrenador()) this.data.miembros().subscribe((l) => this.miembros.set(l));
   }
   cargar() {
-    this.data.progresos().subscribe((l) => {
-      this.todos.set(l);
-      if (!this.seleccionado() || !l.some((p) => p.idMiembro === this.seleccionado())) this.seleccionado.set(this.conDatos()[0]?.id ?? 0);
-      this.cargando.set(false);
+    this.data.progresos().subscribe({
+      next: (l) => {
+        this.todos.set(l);
+        if (!this.seleccionado() || !l.some((p) => p.idMiembro === this.seleccionado())) this.seleccionado.set(this.conDatos()[0]?.id ?? 0);
+        this.cargando.set(false);
+      },
+      error: () => this.cargando.set(false),
     });
   }
   elegir(id: number) { this.seleccionado.set(+id); }
@@ -134,6 +138,10 @@ export class ProgresoComponent implements OnInit {
       next: (m) => { this.enviando.set(false); this.abierto.set(false); this.toast.ok(m); this.seleccionado.set(+v.idMiembro); this.cargar(); },
       error: (e) => { this.enviando.set(false); this.error.set(mensajeError(e)); },
     });
+  }
+  medidasInvalidas(): boolean {
+    const c = this.form.controls;
+    return [c.cinturaCm, c.pechoCm, c.brazoCm, c.caderaCm].some((x) => x.invalid);
   }
   medidasTexto(p: Progreso): string {
     const m = p.medidas;

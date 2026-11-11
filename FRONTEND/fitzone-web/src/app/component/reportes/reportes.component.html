@@ -43,7 +43,7 @@
     @if (pestana() !== 'vencer') {
       <button type="button" class="fz-btn sm:mb-px" [disabled]="!rangoValido() || cargando()" (click)="cargar()">Consultar</button>
     }
-    @if (!rangoValido()) { <p class="fz-error sm:pb-3">La fecha inicial debe ser anterior a la final.</p> }
+    @if (!rangoValido()) { <p class="fz-error sm:pb-3">{{ desde() && hasta() ? 'La fecha inicial debe ser anterior a la final.' : 'Elige las dos fechas.' }}</p> }
   </div>
 
   @if (cargando()) {

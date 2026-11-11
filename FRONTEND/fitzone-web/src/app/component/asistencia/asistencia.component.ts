@@ -2,7 +2,8 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { DataService } from '../../service/data.service';
 import { Inscripcion, Sesion } from '../../model/sesion';
 import { NotificacionService } from '../../service/notificacion';
-import { estadoInscripcion, hoyISO, mensajeError, porFechaHora } from '../../service/util';
+import { estadoInscripcion, mensajeError, porFechaHora } from '../../service/util';
+import { sesionIniciada } from '../../service/validaciones';
 
 @Component({
   selector: 'app-asistencia',
@@ -20,14 +21,13 @@ export class AsistenciaComponent implements OnInit {
   readonly sesiones = signal<Sesion[]>([]);
   readonly inscritos = signal<Inscripcion[]>([]);
   readonly numero = signal(0);
-  /** La asistencia se registra desde el día de la sesión (las futuras no aparecen). */
-  readonly disponibles = computed(() => this.sesiones().filter((s) => s.fecha <= hoyISO()));
+  /** La asistencia se registra desde que empieza la sesión (regla del trigger de asistencia). */
+  readonly disponibles = computed(() => this.sesiones().filter((s) => sesionIniciada(s.fecha, s.horaInicio)));
   readonly sesion = computed(() => this.sesiones().find((s) => s.numeroSesion === this.numero()));
   readonly presentes = computed(() => this.inscritos().filter((i) => i.asistio === true).length);
-  readonly pendientes = computed(() => this.inscritos().filter((i) => i.asistio === null).length);
 
   ngOnInit() {
-    this.data.sesiones().subscribe((l) => { this.sesiones.set(porFechaHora(l, true)); this.cargando.set(false); });
+    this.data.sesiones().subscribe({ next: (l) => { this.sesiones.set(porFechaHora(l, true)); this.cargando.set(false); }, error: () => this.cargando.set(false) });
   }
   elegir(n: number) {
     this.numero.set(+n); this.inscritos.set([]);

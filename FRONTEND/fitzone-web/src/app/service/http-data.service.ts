@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, forkJoin, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { DataService } from './data.service';
+import { nombrePropio } from './util';
 import { AnalisisMongo } from '../model/analisis';
 import { Auditoria } from '../model/auditoria';
 import { Catalogo } from '../model/catalogo';
@@ -30,10 +31,25 @@ function textoRespuesta(cuerpo: string | null): string {
   return t ? t[0].toUpperCase() + t.slice(1) : 'Operación realizada.';
 }
 
+/**
+ * Limpia lo que se envía: quita espacios al inicio y al final de cada texto y
+ * convierte los textos vacíos en null (campos opcionales sin llenar).
+ */
+function limpiar(valor: unknown): unknown {
+  if (typeof valor === 'string') return valor.trim() || null;
+  if (Array.isArray(valor)) return valor.map(limpiar);
+  if (valor && typeof valor === 'object') {
+    return Object.fromEntries(Object.entries(valor).map(([k, v]) => [k, limpiar(v)]));
+  }
+  return valor;
+}
+
 /** Los planes llegan en mayúscula desde tipo_plan (MENSUAL); el front los muestra en minúscula. */
 const plan = (p: string | null | undefined) => (p ? p.toLowerCase() : null);
 const miembroDesdeApi = (m: Miembro): Miembro => ({ ...m, planActual: plan(m.planActual) });
 const membresiaDesdeApi = (m: Membresia): Membresia => ({ ...m, plan: plan(m.plan) ?? m.plan });
+/** Los métodos de pago llegan en mayúscula (TARJETA); se muestran como «Tarjeta». */
+const pagoDesdeApi = (p: Pago): Pago => ({ ...p, metodo: nombrePropio(p.metodo) });
 const hora = (h: string | null | undefined) => (h ? h.slice(0, 5) : '');
 
 const catalogo = (campoId: string, minuscula = false) =>
@@ -52,13 +68,13 @@ export class HttpDataService extends DataService {
 
   protected get<T>(ruta: string, params?: HttpParams) { return this.http.get<T>(`${this.base}${ruta}`, { params }); }
   protected post(ruta: string, cuerpo: unknown): Observable<string> {
-    return this.http.post(`${this.base}${ruta}`, cuerpo, { responseType: 'text' }).pipe(map(textoRespuesta));
+    return this.http.post(`${this.base}${ruta}`, limpiar(cuerpo), { responseType: 'text' }).pipe(map(textoRespuesta));
   }
   protected put(ruta: string, cuerpo: unknown): Observable<string> {
-    return this.http.put(`${this.base}${ruta}`, cuerpo, { responseType: 'text' }).pipe(map(textoRespuesta));
+    return this.http.put(`${this.base}${ruta}`, limpiar(cuerpo), { responseType: 'text' }).pipe(map(textoRespuesta));
   }
   protected patch(ruta: string, cuerpo: unknown): Observable<string> {
-    return this.http.patch(`${this.base}${ruta}`, cuerpo, { responseType: 'text' }).pipe(map(textoRespuesta));
+    return this.http.patch(`${this.base}${ruta}`, limpiar(cuerpo), { responseType: 'text' }).pipe(map(textoRespuesta));
   }
   protected delete(ruta: string): Observable<string> {
     return this.http.delete(`${this.base}${ruta}`, { responseType: 'text' }).pipe(map(textoRespuesta));
@@ -88,7 +104,7 @@ export class HttpDataService extends DataService {
         ...d,
         miembro: miembroDesdeApi(d.miembro),
         membresias: (d.membresias ?? []).map(membresiaDesdeApi),
-        pagos: d.pagos ?? [],
+        pagos: (d.pagos ?? []).map(pagoDesdeApi),
         inscripciones: (d.inscripciones ?? []).map((i) => ({ ...i, horaInicio: hora(i.horaInicio) })),
       })),
     );
@@ -98,7 +114,7 @@ export class HttpDataService extends DataService {
 
   membresias() { return this.get<Membresia[]>('/membresia/getall').pipe(map((l) => l.map(membresiaDesdeApi))); }
   renovarMembresia(d: RenovarMembresia) { return this.post('/membresia/renovar', d); }
-  pagos() { return this.get<Pago[]>('/pago/getall'); }
+  pagos() { return this.get<Pago[]>('/pago/getall').pipe(map((l) => l.map(pagoDesdeApi))); }
   clases() { return this.get<Clase[]>('/clase/getall'); }
   crearClase(d: NuevaClase) { return this.post('/clase/create', d); }
   editarClase(id: number, d: EdicionClase) { return this.put(`/clase/update/${id}`, d); }
@@ -108,7 +124,9 @@ export class HttpDataService extends DataService {
     );
   }
   crearSesion(d: NuevaSesion) { return this.post('/sesion/create', d); }
-  inscripciones(n: number) { return this.get<Inscripcion[]>(`/inscripcion/get/${n}`); }
+  inscripciones(n: number) {
+    return this.get<Inscripcion[]>(`/inscripcion/get/${n}`).pipe(map((l) => l.map((i) => ({ ...i, horaInicio: hora(i.horaInicio) }))));
+  }
   inscribir(n: number, idMiembro: number) { return this.post(`/inscripcion/create/${n}`, { idMiembro }); }
   marcarAsistencia(n: number, idMiembro: number, asistio: boolean) {
     return this.put(`/inscripcion/updateasistencia/${n}`, { idMiembro, asistio });
@@ -123,7 +141,10 @@ export class HttpDataService extends DataService {
   mantenimientos() { return this.get<Mantenimiento[]>('/mantenimiento/getall'); }
   crearMantenimiento(d: NuevoMantenimiento) { return this.post('/mantenimiento/create', d); }
   planes() { return this.get<Record<string, unknown>[]>('/catalogo/tipoplan/getall').pipe(catalogo('idTipoPlan', true)); }
-  metodosPago() { return this.get<Record<string, unknown>[]>('/catalogo/metodopago/getall').pipe(catalogo('idMetodoPago')); }
+  metodosPago() {
+    return this.get<Record<string, unknown>[]>('/catalogo/metodopago/getall').pipe(
+      catalogo('idMetodoPago'), map((l) => l.map((c) => ({ ...c, nombre: nombrePropio(c.nombre) }))));
+  }
   tiposEquipo() { return this.get<Record<string, unknown>[]>('/catalogo/tipoequipo/getall').pipe(catalogo('idTipoEquipo')); }
   roles() { return this.get<Record<string, unknown>[]>('/catalogo/rolempleado/getall').pipe(catalogo('idRolEmpleado')); }
   auditoria() { return this.get<Auditoria[]>('/auditoria/getall'); }
@@ -139,7 +160,9 @@ export class HttpDataService extends DataService {
       map((l) => l.map((r) => ({ ...r, plan: plan(r.plan) ?? r.plan, idSede: r.idSede ?? 0, sede: r.sede ?? '' }))),
     );
   }
-  reporteIngresos(f: FiltroReporte) { return this.get<ReporteIngreso[]>('/reporte/ingresos', this.filtro(f)); }
+  reporteIngresos(f: FiltroReporte) {
+    return this.get<ReporteIngreso[]>('/reporte/ingresos', this.filtro(f)).pipe(map((l) => l.map((r) => ({ ...r, metodo: nombrePropio(r.metodo) }))));
+  }
   reporteMantenimientos(f: FiltroReporte) { return this.get<ReporteMantenimiento[]>('/reporte/mantenimientos', this.filtro(f)); }
   rutinas() { return this.get<Rutina[]>('/rutina/getall'); }
   crearRutina(d: NuevaRutina) { return this.post('/rutina/create', d); }
