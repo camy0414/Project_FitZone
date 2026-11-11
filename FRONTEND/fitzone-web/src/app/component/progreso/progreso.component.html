@@ -37,9 +37,8 @@
               <td class="px-6 py-3 text-xs text-zinc-400">{{ p.notas || '' }}</td>
               <td class="px-6 py-3">
                 @if (puedeModificar(p)) {
-                  <div class="flex justify-end gap-2">
+                  <div class="flex justify-end">
                     <button type="button" class="fz-btn-ghost !px-2.5" (click)="editar(p)" [attr.aria-label]="'Editar medición del ' + p.fecha"><app-icon name="pencil" cls="size-4" /></button>
-                    <button type="button" class="fz-btn-ghost !px-2.5" (click)="porEliminar.set(p)" [attr.aria-label]="'Eliminar medición del ' + p.fecha"><app-icon name="trash" cls="size-4" /></button>
                   </div>
                 }
               </td>
@@ -102,9 +101,4 @@
       </div>
     </form>
   </app-modal>
-}
-
-@if (porEliminar(); as p) {
-  <app-confirmar titulo="Eliminar medición" [mensaje]="'Se eliminará la medición del ' + p.fecha + ' de ' + p.miembro + '.'"
-    [enviando]="eliminando()" (confirmar)="eliminar()" (cancelar)="porEliminar.set(null)" />
 }

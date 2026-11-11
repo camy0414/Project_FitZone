@@ -61,7 +61,7 @@ import { CopPipe } from './pipe/cop.pipe';
 import { FechaPipe } from './pipe/fecha.pipe';
 // Servicios
 import { DataService } from './service/data.service';
-import { HibridoDataService } from './service/hibrido-data.service';
+import { HttpDataService } from './service/http-data.service';
 import { MockDataService } from './service/mock-data.service';
 import { TokenInterceptor } from './service/token.interceptor';
 
@@ -99,11 +99,11 @@ import { TokenInterceptor } from './service/token.interceptor';
     provideHttpClient(withInterceptorsFromDi()),
     // le pone el token de la sesión a todas las peticiones al backend
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
-    // useMock: false -> backend (y datos de ejemplo solo para lo que aún no tiene endpoint)
-    // useMock: true  -> todo con datos de ejemplo
+    // useMock: false -> todo con el backend (PostgreSQL y MongoDB)
+    // useMock: true  -> todo con datos de ejemplo, sin backend
     MockDataService,
-    HibridoDataService,
-    { provide: DataService, useExisting: environment.useMock ? MockDataService : HibridoDataService },
+    HttpDataService,
+    { provide: DataService, useExisting: environment.useMock ? MockDataService : HttpDataService },
   ],
   bootstrap: [AppComponent],
 })

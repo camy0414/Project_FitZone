@@ -80,11 +80,9 @@ export abstract class DataService {
   abstract crearRutina(d: NuevaRutina): Observable<string>;
   abstract editarRutina(idRutina: string, d: EdicionRutina): Observable<string>;
   abstract cambiarEstadoRutina(idRutina: string, activa: boolean): Observable<string>;
-  abstract eliminarRutina(idRutina: string): Observable<string>;
   abstract progresos(): Observable<Progreso[]>;
   abstract crearProgreso(d: NuevoProgreso): Observable<string>;
   abstract editarProgreso(idProgreso: string, d: EdicionProgreso): Observable<string>;
-  abstract eliminarProgreso(idProgreso: string): Observable<string>;
   abstract analisisMongo(): Observable<AnalisisMongo>;
 
   // Auditoría (tabla auditoria, solo administrador)
