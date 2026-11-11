@@ -85,6 +85,15 @@ export class ResumenComponent implements OnInit {
     });
   });
 
+
+  readonly porPagina = 8;
+  readonly paginaSedes = signal(0);
+  readonly totalPaginasSedes = computed(() => Math.max(1, Math.ceil(this.sedes().length / this.porPagina)));
+  readonly sedesPagina = computed(() =>
+    this.sedes().slice(this.paginaSedes() * this.porPagina, (this.paginaSedes() + 1) * this.porPagina));
+  cambiarPaginaSedes(delta: number) {
+    this.paginaSedes.update((p) => Math.min(this.totalPaginasSedes() - 1, Math.max(0, p + delta)));
+  }
   pct = (s: Sesion) => Math.min(100, Math.round((s.inscritos * 100) / s.cupoMaximo));
   diaMes = (f: string) => {
     const [a, m, d] = f.split('-').map(Number);
