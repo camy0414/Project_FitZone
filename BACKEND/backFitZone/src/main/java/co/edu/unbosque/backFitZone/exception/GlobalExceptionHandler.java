@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.mongodb.MongoException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -34,6 +36,11 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(ConflictoException.class)
 	public ResponseEntity<String> conflicto(ConflictoException e) {
 		return responder(HttpStatus.CONFLICT, e.getMessage());
+	}
+	@ExceptionHandler(MongoException.class)
+	public ResponseEntity<String> excepcionMongo(MongoException e) {
+		e.printStackTrace();
+		return responder(HttpStatus.INTERNAL_SERVER_ERROR, "Error al acceder a MongoDB");
 	}
 
 	@ExceptionHandler(DataAccessException.class)
@@ -64,6 +71,8 @@ public class GlobalExceptionHandler {
 		e.printStackTrace();
 		return responder(HttpStatus.INTERNAL_SERVER_ERROR, "Error al acceder a la base de datos");
 	}
+
+	
 
 	private ResponseEntity<String> responder(HttpStatus estado, String mensaje) {
 		return ResponseEntity.status(estado).body(mensaje);

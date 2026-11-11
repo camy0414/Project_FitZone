@@ -48,7 +48,8 @@ public class SecurityConfig {
 						.requestMatchers("/auth/me").authenticated()
 						// Ajustar al crear controllers
 						// Empleados
-						.requestMatchers("/empleado/getall", "/empleado/get/**").hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE")
+						.requestMatchers("/empleado/getall", "/empleado/get/**")
+						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE")
 						.requestMatchers("/empleado/create", "/empleado/update/**", "/empleado/updateestado/**")
 						.hasRole("ADMIN_SISTEMA")
 						// Sedes
@@ -72,7 +73,8 @@ public class SecurityConfig {
 						// Clases
 						.requestMatchers("/clase/getall", "/clase/get/**")
 						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE", "ENTRENADOR_SEDE")
-						.requestMatchers("/clase/create", "/clase/update/**").hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE")
+						.requestMatchers("/clase/create", "/clase/update/**")
+						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE")
 						// Sesiones
 						.requestMatchers("/sesion/getall", "/sesion/get/**")
 						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE", "ENTRENADOR_SEDE")
@@ -81,12 +83,36 @@ public class SecurityConfig {
 						.requestMatchers("/inscripcion/get/**")
 						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE", "ENTRENADOR_SEDE")
 						.requestMatchers("/inscripcion/create/**").hasAnyRole("ADMIN_SISTEMA", "RECEPCIONISTA_SEDE")
-						.requestMatchers("/inscripcion/updateasistencia/**").hasAnyRole("ADMIN_SISTEMA", "ENTRENADOR_SEDE")
+						.requestMatchers("/inscripcion/updateasistencia/**")
+						.hasAnyRole("ADMIN_SISTEMA", "ENTRENADOR_SEDE")
 						// Equipos y mantenimientos
 						.requestMatchers("/equipo/getall", "/equipo/get/**", "/equipo/create", "/equipo/update/**")
 						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE")
-						.requestMatchers("/mantenimiento/getall", "/mantenimiento/getbyequipo/**", "/mantenimiento/get/**", "/mantenimiento/create")
+						.requestMatchers("/mantenimiento/getall", "/mantenimiento/getbyequipo/**",
+								"/mantenimiento/get/**", "/mantenimiento/create")
 						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE")
+						// Catalogos
+						.requestMatchers("/catalogo/**")
+						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE", "ENTRENADOR_SEDE")
+						// Reportes
+						.requestMatchers("/reporte/ocupacionsedesesion")
+						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE", "ENTRENADOR_SEDE")
+						.requestMatchers("/reporte/membresiasporvencer")
+						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE")
+						.requestMatchers("/reporte/ingresos")
+						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE")
+						.requestMatchers("/reporte/mantenimientos").hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE")
+						// Auditoria
+						.requestMatchers("/auditoria/getall").hasRole("ADMIN_SISTEMA")
+						// Rutinas (mongo)
+						.requestMatchers("/rutina/getall", "/rutina/get/**", "/rutina/getbymiembro/**")
+						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "ENTRENADOR_SEDE")
+						.requestMatchers("/rutina/create", "/rutina/update/**", "/rutina/updateestado/**")
+						.hasRole("ENTRENADOR_SEDE")
+						// Progreso fisico (mongo)
+						.requestMatchers("/progreso/getall", "/progreso/get/**", "/progreso/getbymiembro/**")
+						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "ENTRENADOR_SEDE")
+						.requestMatchers("/progreso/create", "/progreso/update/**").hasRole("ENTRENADOR_SEDE")
 						.anyRequest().authenticated())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authenticationProvider(authenticationProvider())

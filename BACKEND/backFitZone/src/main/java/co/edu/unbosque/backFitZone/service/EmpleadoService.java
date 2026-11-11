@@ -85,11 +85,20 @@ public class EmpleadoService implements EmpleadoRepository {
 			id = save(empleado);
 		} catch (DataIntegrityViolationException e) {
 			SQLException sql = (SQLException) e.getMostSpecificCause();
+			if (sql.getMessage().contains("empleado_correo_u")) {
+				throw new ConflictoException("Ya existe un empleado con ese correo");
+			}
 			if (sql.getMessage().contains("empleado_correo_ck")) {
-				throw new NegocioException("El correo no tiene un formato válido");
+				throw new NegocioException("Formato de correo no valido");
+			}
+			if (sql.getMessage().contains("empleado_rol_empleado_fk")) {
+				throw new NegocioException("El rol seleccionado no existe");
+			}
+			if (sql.getMessage().contains("empleado_sede_fk")) {
+				throw new NegocioException("La sede seleccionada no existe");
 			}
 			if ("22001".equals(sql.getSQLState())) {
-				throw new NegocioException("cantidad de caracteres superada");
+				throw new NegocioException("Uno de los datos supera la longitud permitida");
 			}
 			throw e;
 		}
