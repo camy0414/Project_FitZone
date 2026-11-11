@@ -102,6 +102,8 @@ public class SecurityConfig {
 						.requestMatchers("/reporte/ingresos")
 						.hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "RECEPCIONISTA_SEDE")
 						.requestMatchers("/reporte/mantenimientos").hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE")
+						.requestMatchers("/reporte/ejerciciosmasasignados", "/reporte/rutinasentrenador")
+						  .hasAnyRole("ADMIN_SISTEMA", "GERENTE_SEDE", "ENTRENADOR_SEDE")
 						// Auditoria
 						.requestMatchers("/auditoria/getall").hasRole("ADMIN_SISTEMA")
 						// Rutinas (mongo)
