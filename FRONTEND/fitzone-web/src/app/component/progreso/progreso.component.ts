@@ -60,8 +60,6 @@ export class ProgresoComponent implements OnInit {
   readonly abierto = signal(false);
   /** Medición en edición; null cuando se registra una nueva. */
   readonly editando = signal<Progreso | null>(null);
-  readonly porEliminar = signal<Progreso | null>(null);
-  readonly eliminando = signal(false);
   readonly enviando = signal(false);
   readonly error = signal('');
   readonly form = this.fb.nonNullable.group({
@@ -92,7 +90,7 @@ export class ProgresoComponent implements OnInit {
   }
   elegir(id: number) { this.seleccionado.set(+id); }
 
-  /** El entrenador de la sede corrige o elimina mediciones de sus miembros. */
+  /** El entrenador de la sede corrige las mediciones de sus miembros (no se eliminan). */
   puedeModificar(p: Progreso): boolean {
     const u = this.usuario();
     return u?.rol === 'ENTRENADOR_SEDE' && p.idSede === u.idSede;
@@ -112,15 +110,6 @@ export class ProgresoComponent implements OnInit {
     });
     this.form.controls.idMiembro.disable();
     this.error.set(''); this.abierto.set(true);
-  }
-  eliminar() {
-    const p = this.porEliminar();
-    if (!p) return;
-    this.eliminando.set(true);
-    this.data.eliminarProgreso(p.idProgreso).subscribe({
-      next: (m) => { this.eliminando.set(false); this.porEliminar.set(null); this.toast.ok(m); this.cargar(); },
-      error: (e) => { this.eliminando.set(false); this.porEliminar.set(null); this.toast.error(mensajeError(e)); },
-    });
   }
   guardar() {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }

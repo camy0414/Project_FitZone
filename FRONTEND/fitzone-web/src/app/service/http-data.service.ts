@@ -4,7 +4,7 @@ import { Observable, forkJoin, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { DataService } from './data.service';
 import { nombrePropio } from './util';
-import { AnalisisMongo } from '../model/analisis';
+import { AnalisisMongo, EjercicioFrecuente, RutinasEntrenador } from '../model/analisis';
 import { Auditoria } from '../model/auditoria';
 import { Catalogo } from '../model/catalogo';
 import { Clase, EdicionClase, NuevaClase } from '../model/clase';
@@ -58,6 +58,14 @@ const catalogo = (campoId: string, minuscula = false) =>
   );
 
 type EquipoApi = Omit<Equipo, 'ultimoMantenimiento'>;
+
+/** En el backend el campo se llama grasaCorporalPct; en el front, grasaPct. */
+type ProgresoApi = Omit<Progreso, 'grasaPct'> & { grasaCorporalPct?: number | null };
+const progresoDesdeApi = ({ grasaCorporalPct, ...p }: ProgresoApi): Progreso => ({ ...p, grasaPct: grasaCorporalPct ?? undefined });
+const progresoHaciaApi = ({ grasaPct, ...d }: EdicionProgreso) => ({ ...d, grasaCorporalPct: grasaPct });
+
+/** /reporte/rutinasentrenador responde id_empleado (como en Mongo) y puede no traer el nombre. */
+type RutinasEntrenadorApi = { id_empleado: number; entrenador?: string; activas: number; inactivas: number };
 const ultimoMantenimiento = (l: Mantenimiento[], idEquipo: number): string | null =>
   l.filter((m) => m.idEquipo === idEquipo).reduce<string | null>((max, m) => (!max || m.fechaMantenimiento > max ? m.fechaMantenimiento : max), null);
 
@@ -75,9 +83,6 @@ export class HttpDataService extends DataService {
   }
   protected patch(ruta: string, cuerpo: unknown): Observable<string> {
     return this.http.patch(`${this.base}${ruta}`, limpiar(cuerpo), { responseType: 'text' }).pipe(map(textoRespuesta));
-  }
-  protected delete(ruta: string): Observable<string> {
-    return this.http.delete(`${this.base}${ruta}`, { responseType: 'text' }).pipe(map(textoRespuesta));
   }
   private filtro(f: FiltroReporte) {
     let p = new HttpParams().set('desde', f.desde).set('hasta', f.hasta);
@@ -168,10 +173,21 @@ export class HttpDataService extends DataService {
   crearRutina(d: NuevaRutina) { return this.post('/rutina/create', d); }
   editarRutina(id: string, d: EdicionRutina) { return this.put(`/rutina/update/${id}`, d); }
   cambiarEstadoRutina(id: string, activa: boolean) { return this.put(`/rutina/updateestado/${id}`, { activa }); }
-  eliminarRutina(id: string) { return this.delete(`/rutina/delete/${id}`); }
-  progresos() { return this.get<Progreso[]>('/progreso'); }
-  crearProgreso(d: NuevoProgreso) { return this.post('/progreso', d); }
-  editarProgreso(id: string, d: EdicionProgreso) { return this.put(`/progreso/${id}`, d); }
-  eliminarProgreso(id: string) { return this.delete(`/progreso/${id}`); }
-  analisisMongo() { return this.get<AnalisisMongo>('/rutina/analisis'); }
+  progresos() { return this.get<ProgresoApi[]>('/progreso/getall').pipe(map((l) => l.map(progresoDesdeApi))); }
+  crearProgreso({ idMiembro, ...d }: NuevoProgreso) { return this.post('/progreso/create', { idMiembro, ...progresoHaciaApi(d) }); }
+  editarProgreso(id: string, d: EdicionProgreso) { return this.put(`/progreso/update/${id}`, progresoHaciaApi(d)); }
+  analisisMongo(): Observable<AnalisisMongo> {
+    return forkJoin({
+      ejercicios: this.get<EjercicioFrecuente[]>('/reporte/ejerciciosmasasignados'),
+      entrenadores: this.get<RutinasEntrenadorApi[]>('/reporte/rutinasentrenador'),
+    }).pipe(
+      map(({ ejercicios, entrenadores }) => ({
+        // de más asignado a menos (el backend los ordena por nombre)
+        ejercicios: [...ejercicios].sort((a, b) => b.rutinas - a.rutinas || a.nombre.localeCompare(b.nombre)),
+        rutinasEntrenador: entrenadores.map((e): RutinasEntrenador => ({
+          idEmpleado: e.id_empleado, entrenador: e.entrenador ?? `Entrenador n.º ${e.id_empleado}`, activas: e.activas, inactivas: e.inactivas,
+        })),
+      })),
+    );
+  }
 }

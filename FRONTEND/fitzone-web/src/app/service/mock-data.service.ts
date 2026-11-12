@@ -64,16 +64,6 @@ export class MockDataService extends DataService {
     this.recalcularPlanes();
   }
 
-  /**
-   * Modo mixto: cuando los miembros vienen del backend, se copian aquí para que los módulos que
-   * siguen con datos de ejemplo (membresías, inscripciones, rutinas…) reconozcan a esos miembros.
-   */
-  sincronizarMiembros(reales: Miembro[]) {
-    const porId = new Map(this.lMiembros.map((m) => [m.idMiembro, m]));
-    for (const r of reales) porId.set(r.idMiembro, { ...porId.get(r.idMiembro), ...r });
-    this.lMiembros = [...porId.values()];
-  }
-
   // ---------- utilidades ----------
   private ok<T>(datos: T): Observable<T> {
     return of(datos).pipe(delay(250));
@@ -549,12 +539,6 @@ export class MockDataService extends DataService {
     this.lRutinas = this.lRutinas.map((v) => (v.idRutina === id ? { ...v, activa } : v));
     return this.ok(`OK: rutina ${activa ? 'activada' : 'desactivada'}.`);
   }
-  eliminarRutina(id: string) {
-    const permiso = this.puedeModificarRutina(id);
-    if (permiso) return this.fail(permiso);
-    this.lRutinas = this.lRutinas.filter((r) => r.idRutina !== id);
-    return this.ok('OK: rutina eliminada.');
-  }
 
   // ---------- MongoDB: progreso ----------
   progresos() { return this.ok(this.porSede(this.lProgresos)); }
@@ -594,12 +578,6 @@ export class MockDataService extends DataService {
       ? { ...p, fecha: x.fecha, pesoKg: x.pesoKg, grasaPct: x.grasaPct, medidas: x.medidas, notas: x.notas }
       : p));
     return this.ok('OK: medición actualizada.');
-  }
-  eliminarProgreso(id: string) {
-    const permiso = this.puedeModificarProgreso(id);
-    if (permiso) return this.fail(permiso);
-    this.lProgresos = this.lProgresos.filter((p) => p.idProgreso !== id);
-    return this.ok('OK: medición eliminada.');
   }
 
   // ---------- MongoDB: agregaciones (pestañas de rutinas en Reportes) ----------
